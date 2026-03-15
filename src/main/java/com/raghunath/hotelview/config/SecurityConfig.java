@@ -28,17 +28,25 @@ public class SecurityConfig {
     }
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(List.of("*"));
-        configuration.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
-        configuration.setAllowedHeaders(List.of("*"));
+        // 1. Specify the exact origin of your frontend
+        // This automatically covers localhost:3000/admin and all other sub-paths
+        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
+
+        // 2. Define allowed HTTP methods
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+
+        // 3. Define allowed headers
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Cache-Control"));
+
+        // 4. Allow credentials (required if you use cookies or Bearer tokens)
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        // 5. Apply this configuration to all backend API paths
         source.registerCorsConfiguration("/**", configuration);
 
-        return (CorsConfigurationSource) source;
+        return source;
     }
 }
