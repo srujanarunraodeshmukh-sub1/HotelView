@@ -5,6 +5,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
@@ -13,11 +14,11 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
-    private static final String SECRET_KEY =
-            "aW50ZWxsaWplbnQtamF2YS1zcHJpbmctYm9vdC1zZWN1cml0eS1qd3QtdG9rZW4=";
+    @Value("${jwt.secret}")
+    private String SECRET_KEY;
 
-    private final long ACCESS_TOKEN_VALIDITY = 1000 * 60 * 15;
-    private final long REFRESH_TOKEN_VALIDITY = 1000 * 60 * 60 * 24 * 7;
+    private final long ACCESS_TOKEN_VALIDITY = 1000 * 60 * 15; // 15 min
+    private final long REFRESH_TOKEN_VALIDITY = 1000 * 60 * 60 * 24 * 7; // 7 days
 
     private Key getSigningKey() {
         byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
@@ -53,5 +54,23 @@ public class JwtUtil {
                 .getBody();
 
         return claims.getSubject();
+    }
+
+    public boolean validateToken(String token) {
+
+        try {
+
+            Jwts.parserBuilder()
+                    .setSigningKey(getSigningKey())
+                    .build()
+                    .parseClaimsJws(token);
+
+            return true;
+
+        } catch (Exception e) {
+
+            return false;
+
+        }
     }
 }

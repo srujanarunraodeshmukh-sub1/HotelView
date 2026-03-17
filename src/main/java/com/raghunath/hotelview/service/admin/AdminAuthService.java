@@ -17,7 +17,7 @@ public class AdminAuthService {
 
     private final JwtUtil jwtUtil;
 
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final BCryptPasswordEncoder passwordEncoder;
 
     public LoginResponse login(LoginRequest request) {
 
