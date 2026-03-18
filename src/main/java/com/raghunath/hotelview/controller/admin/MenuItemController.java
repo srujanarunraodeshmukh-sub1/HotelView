@@ -5,6 +5,7 @@ import com.raghunath.hotelview.dto.admin.MenuItemRequest;
 import com.raghunath.hotelview.entity.MenuItem;
 import com.raghunath.hotelview.service.admin.MenuItemService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -35,15 +36,14 @@ public class MenuItemController {
 
     // all items of hotel
     @GetMapping("/allmenuitem")
-    public List<MenuItem> getAllMenuItems(){
+    public Page<MenuItem> getAllMenuItems(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) { // This limits it to 10 at a time!
 
-        Authentication auth =
-                SecurityContextHolder.getContext().getAuthentication();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String hotelId = auth.getName();
 
-        String adminId = auth.getName();
-
-        return menuItemService.getAllHotelItems(adminId);
-
+        return menuItemService.getAllHotelItems(hotelId, page, size);
     }
 
     // items by category

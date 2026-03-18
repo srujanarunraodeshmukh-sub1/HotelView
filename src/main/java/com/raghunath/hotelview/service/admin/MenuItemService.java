@@ -6,6 +6,10 @@ import com.raghunath.hotelview.entity.MenuItem;
 import com.raghunath.hotelview.repository.AdminRepository;
 import com.raghunath.hotelview.repository.MenuItemRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -45,8 +49,11 @@ public class MenuItemService {
     }
 
     // Simplified: No Admin lookup needed!
-    public List<MenuItem> getAllHotelItems(String hotelIdFromToken) {
-        return menuItemRepository.findByHotelIdAndIsApprovedTrue(hotelIdFromToken);
+    public Page<MenuItem> getAllHotelItems(String hotelId, int page, int size) {
+        // We add a Sort here so the list doesn't jump around when scrolling
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+
+        return menuItemRepository.findByHotelIdAndIsApprovedTrue(hotelId, pageable);
     }
 
     // Simplified: Search by Hotel + Item ID
