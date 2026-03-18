@@ -558,5 +558,635 @@
     "isAvailable": true,
     "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773675212/soyabean-vadi_w3giwo.jpg",
     "preparationTime": 20
+  },
+  {
+    "category": "Paneer Specialty",
+    "name": "Paneer Matka",
+    "description": "Paneer cooked in special clay pot gravy",
+    "price": 220,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/paneer-matka_n9doyw.jpg",
+    "preparationTime": 25
+  },
+  {
+    "category": "Paneer Specialty",
+    "name": "Paneer Mushroom",
+    "description": "Paneer and mushroom in creamy gravy",
+    "price": 200,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/paneer-mushroom_qv8fpd.jpg",
+    "preparationTime": 22
+  },
+  {
+    "category": "Paneer Specialty",
+    "name": "Paneer Angara",
+    "description": "Spicy charcoal grilled paneer curry",
+    "price": 200,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/paneer-angara_fmsuvy.jpg",
+    "preparationTime": 25
+  },
+  {
+    "category": "Paneer Specialty",
+    "name": "Paneer Rajwadi",
+    "description": "Royal style paneer in rich cashew gravy",
+    "price": 200,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/paneer-rajwadi_eyz15b.jpg",
+    "preparationTime": 25
+  },
+  {
+    "category": "Paneer Specialty",
+    "name": "Paneer Butter Masala",
+    "description": "Creamy tomato gravy with soft paneer cubes",
+    "price": 150,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/paneer-butter-masala_jurucf.jpg",
+    "preparationTime": 20
+  },
+  {
+    "category": "Paneer Specialty",
+    "name": "Paneer Jaipuri",
+    "description": "Paneer in Rajasthani style spicy curry",
+    "price": 150,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/paneer-jaipuri_jbdnrv.jpg",
+    "preparationTime": 20
+  },
+  {
+    "category": "Paneer Specialty",
+    "name": "Palak Paneer",
+    "description": "Paneer cubes in creamy spinach gravy",
+    "price": 150,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/palak-paneer_mxpay4.jpg",
+    "preparationTime": 20
+  },
+  {
+    "category": "Paneer Specialty",
+    "name": "Paneer Bhurji",
+    "description": "Scrambled paneer with onions and spices",
+    "price": 150,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/paneer-bhurji_ghxpb5.png",
+    "preparationTime": 15
+  },
+  {
+    "category": "Paneer Specialty",
+    "name": "Paneer Bhurji Dry",
+    "description": "Dry scrambled paneer with minimal gravy",
+    "price": 170,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/paneer-bhurji-dry_skipjl.jpg",
+    "preparationTime": 15
+  },
+  {
+    "category": "Paneer Specialty",
+    "name": "Paneer Toofani",
+    "description": "Extra spicy paneer in fiery gravy",
+    "price": 150,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/paneer-toofani_xgxmof.jpg",
+    "preparationTime": 20
+  },
+  {
+    "category": "Paneer Specialty",
+    "name": "Paneer Lababdar",
+    "description": "Rich and creamy paneer curry",
+    "price": 180,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/paneer-lababdar_h8avcp.jpg",
+    "preparationTime": 22
+  },
+  {
+    "category": "Paneer Specialty",
+    "name": "Paneer Roll",
+    "description": "Paneer wrapped in crispy rolls",
+    "price": 180,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/paneer-roll_sz8vcd.jpg",
+    "preparationTime": 18
+  },
+  {
+    "category": "Paneer Specialty",
+    "name": "Shahi Paneer",
+    "description": "Royal paneer in rich cashew cream sauce",
+    "price": 160,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/shahi-paneer_hegogp.jpg",
+    "preparationTime": 22
+  },
+  {
+    "category": "Paneer Specialty",
+    "name": "Paneer Pasanda",
+    "description": "Stuffed paneer slices in creamy gravy",
+    "price": 160,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/paneer-pasanda_urzutt.jpg",
+    "preparationTime": 25
+  },
+  {
+    "category": "Paneer Specialty",
+    "name": "Paneer Kofta",
+    "description": "Paneer dumplings in rich tomato gravy",
+    "price": 170,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/paneer-kofta_yaeclk.jpg",
+    "preparationTime": 25
+  },
+  {
+    "category": "Paneer Specialty",
+    "name": "Paneer Kadai",
+    "description": "Paneer cooked with capsicum in kadai masala",
+    "price": 150,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/paneer-kadai_syyzgj.jpg",
+    "preparationTime": 20
+  },
+  {
+    "category": "Paneer Specialty",
+    "name": "Paneer Handi",
+    "description": "Paneer cooked in traditional handi style",
+    "price": 160,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/paneer-handi_o4cxbz.jpg",
+    "preparationTime": 22
+  },
+  {
+    "category": "Paneer Specialty",
+    "name": "Paneer Lasuniya",
+    "description": "Garlic flavored paneer curry",
+    "price": 160,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/paneer-lasuniya_mswhfx.jpg",
+    "preparationTime": 20
+  },
+  {
+    "category": "Paneer Specialty",
+    "name": "Paneer Kolhapuri",
+    "description": "Spicy Kolhapuri style paneer curry",
+    "price": 160,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/paneer-kolhapuri_j27dx7.jpg",
+    "preparationTime": 22
+  },
+  {
+    "category": "Paneer Specialty",
+    "name": "Paneer Matar Masala",
+    "description": "Paneer and peas in tomato gravy",
+    "price": 140,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/paneer-matar-masala_kacnkm.jpg",
+    "preparationTime": 20
+  },
+  {
+    "category": "Paneer Specialty",
+    "name": "Paneer Patiala",
+    "description": "Paneer in Patiala style creamy gravy",
+    "price": 150,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/paneer-patiala_ckdgiv.jpg",
+    "preparationTime": 22
+  },
+  {
+    "category": "Paneer Specialty",
+    "name": "Paneer Diwani",
+    "description": "Royal paneer in aromatic curry",
+    "price": 160,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/paneer-diwani_mwvgrc.jpg",
+    "preparationTime": 22
+  },
+  {
+    "category": "Cashew Specialty",
+    "name": "Kaju Paneer",
+    "description": "Paneer in rich cashew cream sauce",
+    "price": 180,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/kaju-paneer_gu64fo.jpg",
+    "preparationTime": 25
+  },
+  {
+    "category": "Cashew Specialty",
+    "name": "Kaju Curry",
+    "description": "Cashews in creamy gravy",
+    "price": 200,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/kaju-curry_myfjbf.jpg",
+    "preparationTime": 25
+  },
+  {
+    "category": "Cashew Specialty",
+    "name": "Soya Kaju",
+    "description": "Soya and cashew in rich gravy",
+    "price": 240,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/soya-kaju_wbbc4x.jpg",
+    "preparationTime": 25
+  },
+  {
+    "category": "Cashew Specialty",
+    "name": "Kaju Masala",
+    "description": "Cashews in aromatic spiced curry",
+    "price": 200,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/kaju-masala_tfbt2o.jpg",
+    "preparationTime": 25
+  },
+  {
+    "category": "Cashew Specialty",
+    "name": "Kaju Kofta Curry",
+    "description": "Cashew kofta balls in rich gravy",
+    "price": 200,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/kaju-kofta-curry_ijvjx9.jpg",
+    "preparationTime": 28
+  },
+  {
+    "category": "Cheese Specialty",
+    "name": "Cheese Butter Masala",
+    "description": "Cheese cubes in creamy butter masala",
+    "price": 200,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/cheese-butter-masala_d6pred.jpg",
+    "preparationTime": 22
+  },
+  {
+    "category": "Cheese Specialty",
+    "name": "Cheese Angoori",
+    "description": "Small cheese balls in creamy gravy",
+    "price": 220,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/cheese-angoori_lb5946.jpg",
+    "preparationTime": 25
+  },
+  {
+    "category": "Cheese Specialty",
+    "name": "Cheese Paneer",
+    "description": "Cheese and paneer combo in rich gravy",
+    "price": 180,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/cheese-paneer_pb8ybv.jpg",
+    "preparationTime": 22
+  },
+  {
+    "category": "Dal",
+    "name": "Dal Fry",
+    "description": "Tempered yellow lentils",
+    "price": 120,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/dal-fry_toi6zq.jpg",
+    "preparationTime": 20
+  },
+  {
+    "category": "Dal",
+    "name": "Dal Tadka",
+    "description": "Yellow lentils with cumin tempering",
+    "price": 130,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/dal-tadka_fcysxs.jpg",
+    "preparationTime": 20
+  },
+  {
+    "category": "Dal",
+    "name": "Dal Makhani",
+    "description": "Creamy black lentils slow cooked with butter",
+    "price": 150,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/dal-makhani_kj8s8n.jpg",
+    "preparationTime": 30
+  },
+  {
+    "category": "Dal",
+    "name": "Dal Kolhapuri",
+    "description": "Spicy Kolhapuri style lentils",
+    "price": 130,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/dal-kolhapuri_lvg2b6.jpg",
+    "preparationTime": 22
+  },
+  {
+    "category": "Dal",
+    "name": "Dal Palak",
+    "description": "Lentils cooked with spinach",
+    "price": 120,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/dal-palak_vi6jku.png",
+    "preparationTime": 22
+  },
+  {
+    "category": "Dal",
+    "name": "Dal Butter",
+    "description": "Lentils finished with butter",
+    "price": 130,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/dal-butter_w6ykjg.jpg",
+    "preparationTime": 20
+  },
+  {
+    "category": "Dal",
+    "name": "Jeera Dal",
+    "description": "Simple cumin flavored lentils",
+    "price": 100,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/jeera-dal_mhh2dl.jpg",
+    "preparationTime": 18
+  },
+  {
+    "category": "Bread",
+    "name": "Tawa Roti",
+    "description": "Whole wheat flatbread cooked on tawa",
+    "price": 12,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/tawa-roti_b59dpe.jpg",
+    "preparationTime": 5
+  },
+  {
+    "category": "Bread",
+    "name": "Tawa Butter Roti",
+    "description": "Buttered whole wheat flatbread",
+    "price": 15,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/tawa-butter-roti_fqrvyq.jpg",
+    "preparationTime": 5
+  },
+  {
+    "category": "Bread",
+    "name": "Tawa Paratha",
+    "description": "Layered flatbread cooked on tawa",
+    "price": 15,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/tawa-paratha_zvr0xx.jpg",
+    "preparationTime": 7
+  },
+  {
+    "category": "Bread",
+    "name": "Tawa Butter Paratha",
+    "description": "Buttered layered flatbread",
+    "price": 18,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/tawa-butter-paratha_oiqxqu.jpg",
+    "preparationTime": 7
+  },
+  {
+    "category": "Bread",
+    "name": "Tandoori Roti",
+    "description": "Clay oven baked whole wheat bread",
+    "price": 15,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/tandoori-roti_wu8irn.jpg",
+    "preparationTime": 8
+  },
+  {
+    "category": "Bread",
+    "name": "Tandoori Wheat Roti",
+    "description": "Whole wheat tandoori bread",
+    "price": 15,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/tandoori-wheat-roti_gfqygz.jpg",
+    "preparationTime": 8
+  },
+  {
+    "category": "Bread",
+    "name": "Butter Tandoori Roti",
+    "description": "Buttered tandoori roti",
+    "price": 18,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/butter-tandoori-roti_hrrfqy.jpg",
+    "preparationTime": 8
+  },
+  {
+    "category": "Bread",
+    "name": "Naan",
+    "description": "Soft leavened bread from tandoor",
+    "price": 30,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/naan_iov0eg.jpg",
+    "preparationTime": 10
+  },
+  {
+    "category": "Bread",
+    "name": "Butter Naan",
+    "description": "Naan brushed with butter",
+    "price": 35,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/butter-naan_aubthv.jpg",
+    "preparationTime": 10
+  },
+  {
+    "category": "Bread",
+    "name": "Garlic Butter Naan",
+    "description": "Naan topped with garlic and butter",
+    "price": 50,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/garlic-butter-naan_o4o3d7.jpg",
+    "preparationTime": 12
+  },
+  {
+    "category": "Bread",
+    "name": "Lachha Paratha",
+    "description": "Multi-layered crispy paratha",
+    "price": 30,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/lachha-paratha_uxuphi.jpg",
+    "preparationTime": 12
+  },
+  {
+    "category": "Bread",
+    "name": "Butter Lachha Paratha",
+    "description": "Buttered multi-layered paratha",
+    "price": 35,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/butter-lachha-paratha_rfwwo6.jpg",
+    "preparationTime": 12
+  },
+  {
+    "category": "Bread",
+    "name": "Cheese Naan",
+    "description": "Naan stuffed with cheese",
+    "price": 55,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/cheese-naan_cme7e8.jpg",
+    "preparationTime": 15
+  },
+  {
+    "category": "Bread",
+    "name": "Aloo Paratha",
+    "description": "Paratha stuffed with spiced potato",
+    "price": 50,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/aloo-paratha_deik2y.jpg",
+    "preparationTime": 15
+  },
+  {
+    "category": "Bread",
+    "name": "Paneer Paratha",
+    "description": "Paratha stuffed with paneer",
+    "price": 60,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/paneer-paratha_wzhjuy.jpg",
+    "preparationTime": 15
+  },
+  {
+    "category": "Rice",
+    "name": "Plain Rice",
+    "description": "Steamed basmati rice",
+    "price": 90,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/plain-rice_lft7ux.jpg",
+    "preparationTime": 15
+  },
+  {
+    "category": "Rice",
+    "name": "Jeera Rice",
+    "description": "Basmati rice flavored with cumin",
+    "price": 100,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/jeera-rice_ukfwbq.jpg",
+    "preparationTime": 18
+  },
+  {
+    "category": "Rice",
+    "name": "Veg Biryani",
+    "description": "Aromatic rice with mixed vegetables",
+    "price": 150,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/veg-biryani_ig74l4.jpg",
+    "preparationTime": 30
+  },
+  {
+    "category": "Rice",
+    "name": "Hyderabadi Biryani",
+    "description": "Hyderabadi style vegetable biryani",
+    "price": 150,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/hyderabadi-biryani_krq9kt.jpg",
+    "preparationTime": 30
+  },
+  {
+    "category": "Rice",
+    "name": "Veg Pulao",
+    "description": "Mildly spiced rice with vegetables",
+    "price": 120,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/veg-pulao_ropidj.jpg",
+    "preparationTime": 25
+  },
+  {
+    "category": "Rice",
+    "name": "Kaju Pulao",
+    "description": "Pulao with cashews and vegetables",
+    "price": 150,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/kaju-pulao_rjg9gz.jpg",
+    "preparationTime": 25
+  },
+  {
+    "category": "Rice",
+    "name": "Curd Rice",
+    "description": "Rice mixed with seasoned yogurt",
+    "price": 100,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/curd-rice_yo6jsp.jpg",
+    "preparationTime": 15
+  },
+  {
+    "category": "Rice",
+    "name": "Dal Khichdi",
+    "description": "Comfort food of rice and lentils",
+    "price": 130,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/dal-khichdi_c8m0g6.jpg",
+    "preparationTime": 25
+  },
+  {
+    "category": "Sweet",
+    "name": "Gulab Jamun (2 pcs)",
+    "description": "Deep fried milk balls in sugar syrup",
+    "price": 40,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/gulab-jamun_ioslrd.jpg",
+    "preparationTime": 5
+  },
+  {
+    "category": "Sweet",
+    "name": "Rasgulla (2 pcs)",
+    "description": "Soft cottage cheese balls in syrup",
+    "price": 40,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/rasgulla_b8zsoo.jpg",
+    "preparationTime": 5
+  },
+  {
+    "category": "Sweet",
+    "name": "Ice Cream",
+    "description": "Creamy frozen dessert",
+    "price": 50,
+    "isVeg": true,
+    "isAvailable": true,
+    "imageUrl": "https://res.cloudinary.com/dy5gnwaws/image/upload/v1773834755/ice-cream_flsdu0.jpg",
+    "preparationTime": 2
   }
 ]

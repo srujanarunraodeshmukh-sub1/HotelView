@@ -21,11 +21,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Profile("dev")
 public class ApiPerformanceTester implements CommandLineRunner {
 
-    private final boolean RUN_STRESS_TEST = false;
+    private final boolean RUN_STRESS_TEST = true;
     private final String URL = "https://hotelview.onrender.com/api/v1/menu/add";
 
     // PASTE YOUR TOKEN HERE
-    private final String ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJob3RlbDAwMSIsImlhdCI6MTc3Mzc4MTgwNSwiZXhwIjoxNzczNzgyNzA1fQ.KqebTgcW8ntsAxhZsSy_Fqd_LfIjhOr0Pf3i-G7er38";
+    private final String ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJob3RlbDAwMSIsImlhdCI6MTc3MzgzOTY3NywiZXhwIjoxNzczODQwNTc3fQ.7MtTyDdVgaYcWkYl-7vgPe0HTrP7C4aMn1XojzL0O90";
 
     @Override
     public void run(String... args) throws Exception {
@@ -76,8 +76,8 @@ public class ApiPerformanceTester implements CommandLineRunner {
         long duration = System.currentTimeMillis() - startTime;
         System.out.println("\n--- FINAL STRESS TEST RESULTS ---");
         System.out.println("Total Time: " + duration + "ms");
-        System.out.println("Successful: " + successCount.get() + "/56");
-        System.out.println("Average Latency per request: " + (duration / 56.0) + "ms");
+        System.out.println("Successful: " + successCount.get() + "/119");
+        System.out.println("Average Latency per request: " + (duration / 119.0) + "ms");
 
         if (successCount.get() == 0) {
             System.err.println("HINT: If you got 403, check if your Token is expired or CSRF is disabled on Render.");

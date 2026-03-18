@@ -52,20 +52,31 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // Allow the React frontend
-        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
+        // ✅ Allow your deployed frontend + local + all (for testing)
+        configuration.setAllowedOriginPatterns(List.of(
+                "http://localhost:3000",
+                "https://hotelview-tau.vercel.app",
+                "*"
+        ));
 
         // Allowed HTTP methods
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(List.of(
+                "GET", "POST", "PUT", "DELETE", "OPTIONS"
+        ));
 
-        // Allowed Headers (Must include Authorization if using JWT/Tokens)
-        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Cache-Control"));
+        // Allowed Headers
+        configuration.setAllowedHeaders(List.of(
+                "Authorization",
+                "Content-Type",
+                "Cache-Control"
+        ));
 
-        // Must be true if your frontend uses 'withCredentials: true'
+        // Allow cookies / JWT
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
+
         return source;
     }
 }
