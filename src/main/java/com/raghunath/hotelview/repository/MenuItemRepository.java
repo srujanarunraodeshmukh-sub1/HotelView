@@ -14,4 +14,5 @@ public interface MenuItemRepository extends MongoRepository<MenuItem,String> {
 
     Optional<MenuItem> findByHotelIdAndId(String hotelId,String id);
 
+    Optional<MenuItem> findByHotelIdAndName(String hotelId, String name);
 }

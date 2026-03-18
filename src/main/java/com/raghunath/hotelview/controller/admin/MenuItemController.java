@@ -71,4 +71,14 @@ public class MenuItemController {
         return menuItemService.getMenuItem(adminId,itemId);
 
     }
+
+    @GetMapping("/search")
+    public MenuItem getMenuItemByName(@RequestParam String name) {
+        // 1. Get the Hotel ID directly from the optimized Token
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String hotelId = auth.getName();
+
+        // 2. Search using BOTH the Hotel ID and the Menu Name
+        return menuItemService.getMenuItemByHotelAndName(hotelId, name);
+    }
 }

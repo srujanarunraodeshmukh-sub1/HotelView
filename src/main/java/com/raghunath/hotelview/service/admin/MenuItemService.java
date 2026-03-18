@@ -44,22 +44,19 @@ public class MenuItemService {
         return menuItemRepository.findByHotelIdAndCategoryAndIsApprovedTrue(hotelIdFromToken, category);
     }
 
-    public List<MenuItem> getAllHotelItems(String adminId){
-
-        Admin admin = adminRepository.findById(adminId)
-                .orElseThrow(() -> new RuntimeException("Admin not found"));
-
-        return menuItemRepository
-                .findByHotelIdAndIsApprovedTrue(admin.getHotelId());
+    // Simplified: No Admin lookup needed!
+    public List<MenuItem> getAllHotelItems(String hotelIdFromToken) {
+        return menuItemRepository.findByHotelIdAndIsApprovedTrue(hotelIdFromToken);
     }
 
-    public MenuItem getMenuItem(String adminId,String itemId){
-
-        Admin admin = adminRepository.findById(adminId)
-                .orElseThrow(() -> new RuntimeException("Admin not found"));
-
-        return menuItemRepository
-                .findByHotelIdAndId(admin.getHotelId(),itemId)
+    // Simplified: Search by Hotel + Item ID
+    public MenuItem getMenuItem(String hotelIdFromToken, String itemId) {
+        return menuItemRepository.findByHotelIdAndId(hotelIdFromToken, itemId)
                 .orElseThrow(() -> new RuntimeException("Menu item not found"));
+    }
+
+    public MenuItem getMenuItemByHotelAndName(String hotelId, String name) {
+        return menuItemRepository.findByHotelIdAndName(hotelId, name)
+                .orElseThrow(() -> new RuntimeException("Menu item '" + name + "' not found for this hotel."));
     }
 }
