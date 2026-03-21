@@ -11,6 +11,7 @@ public class RestaurantTable {
     private String id;
     private String hotelId;
     private int tableNumber;
+    private int capacity;
     private String status;
     private Double currentBill;
 

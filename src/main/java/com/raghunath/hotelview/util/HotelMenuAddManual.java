@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
 @Profile("dev")
-public class ApiPerformanceTester implements CommandLineRunner {
+public class HotelMenuAddManual implements CommandLineRunner {
 
     private final boolean RUN_STRESS_TEST = false;
     private final String URL = "https://hotelview.onrender.com/api/v1/menu/add";
