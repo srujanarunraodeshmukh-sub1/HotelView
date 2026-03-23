@@ -30,9 +30,17 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<String> logout() {
-        String adminId = SecurityContextHolder.getContext().getAuthentication().getName();
-        adminAuthService.logoutAdmin(adminId);
+    public ResponseEntity<String> logout(@RequestBody Map<String, String> request) {
+        // Get the token from the body
+        String refreshToken = request.get("refreshToken");
+
+        if (refreshToken == null || refreshToken.isEmpty()) {
+            return ResponseEntity.badRequest().body("Refresh token required for logout");
+        }
+
+        // Pass the TOKEN, not the ID
+        adminAuthService.logoutAdmin(refreshToken);
+
         return ResponseEntity.ok("Admin logged out successfully");
     }
 }

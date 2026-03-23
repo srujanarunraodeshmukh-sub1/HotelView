@@ -11,5 +11,5 @@ public interface EmployeeRefreshTokenRepository extends MongoRepository<Employee
     // Add this to both Repository interfaces
     long countByUserId(String userId);
 
-    void deleteByToken(String refreshToken);
+    long deleteByToken(String token);
 }

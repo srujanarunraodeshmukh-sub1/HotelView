@@ -10,6 +10,7 @@ import com.raghunath.hotelview.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -71,39 +72,57 @@ public class AdminAuthService {
     }
 
     public Map<String, String> refreshAdminToken(String oldRefreshToken) {
-        // 1. Physical Validation
-        if (!jwtUtil.validateToken(oldRefreshToken)) {
-            throw new RuntimeException("Refresh token expired");
+        // 1. Basic Null Check & Physical Validation
+        if (oldRefreshToken == null || !jwtUtil.validateToken(oldRefreshToken.trim())) {
+            throw new RuntimeException("Refresh token is invalid or expired");
         }
 
-        // 2. Database Check (Security Layer)
-        AdminRefreshToken storedToken = adminRefreshTokenRepository.findByToken(oldRefreshToken)
-                .orElseThrow(() -> new RuntimeException("Admin session invalid or logged out"));
+        String cleanOldToken = oldRefreshToken.trim();
 
-        // 3. Extract Claims
-        String adminId = jwtUtil.extractUserId(oldRefreshToken);
-        String hotelId = jwtUtil.extractHotelId(oldRefreshToken);
-        String role = jwtUtil.extractRole(oldRefreshToken);
+        // 2. THE OWNER'S CHECK (The Database Truth)
+        // If you delete this from MongoDB, the user is KICKED OUT here.
+        AdminRefreshToken storedToken = adminRefreshTokenRepository.findByToken(cleanOldToken)
+                .orElseThrow(() -> new RuntimeException("Session has been revoked. Access Denied."));
 
-        // --- 4. TOKEN ROTATION ---
-        // Generate a new pair
+        // 3. Extraction & Identity Verification
+        String adminId = jwtUtil.extractUserId(cleanOldToken);
+        String hotelId = jwtUtil.extractHotelId(cleanOldToken);
+        String role = jwtUtil.extractRole(cleanOldToken);
+
+        // Security Guard: Ensure the token being used actually belongs to the user in the DB record
+        if (!storedToken.getUserId().equals(adminId)) {
+            throw new RuntimeException("Identity mismatch. Security alert triggered.");
+        }
+
+        // --- 4. TOKEN ROTATION (Enterprise Standard) ---
+        // We generate a NEW Access Token AND a NEW Refresh Token
         String newAccessToken = jwtUtil.generateAccessToken(adminId, hotelId, role);
         String newRefreshToken = jwtUtil.generateRefreshToken(adminId, hotelId, role);
 
-        // Update existing record with the new refresh token (keeps session count stable)
+        // 5. UPDATE the existing Database Record
+        // We replace the old string with the new string.
+        // This keeps the 'countByUserId' stable (doesn't increase session count).
         storedToken.setToken(newRefreshToken);
         storedToken.setExpiryDate(LocalDateTime.now().plusDays(7));
         adminRefreshTokenRepository.save(storedToken);
 
+        // 6. Return the new pair to the Frontend
         return Map.of(
                 "accessToken", newAccessToken,
                 "refreshToken", newRefreshToken
         );
     }
 
+    @Transactional
     public void logoutAdmin(String refreshToken) {
-        // Industry Standard: Precise Logout
-        // Deletes ONLY the specific session tied to this token
-        adminRefreshTokenRepository.deleteByToken(refreshToken);
+        // Trim the token to remove any accidental spaces/newlines from Postman
+        Long deletedCount = adminRefreshTokenRepository.deleteByToken(refreshToken.trim());
+
+        if (deletedCount == 0) {
+            System.out.println("DEBUG: No token found in DB matching: " + refreshToken);
+            // This confirms if the token was missing or the query failed
+        } else {
+            System.out.println("DEBUG: Successfully deleted " + deletedCount + " session(s)");
+        }
     }
 }

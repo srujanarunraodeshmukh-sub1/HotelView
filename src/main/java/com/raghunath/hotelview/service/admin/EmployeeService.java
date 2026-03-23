@@ -73,27 +73,41 @@ public class EmployeeService {
     }
 
     public Map<String, String> refreshEmployeeToken(String refreshToken) {
-        if (!jwtUtil.validateToken(refreshToken)) {
-            throw new RuntimeException("Refresh token expired");
+        // 1. Basic Null Check & Physical Validation (The "Real JWT" Check)
+        if (refreshToken == null || !jwtUtil.validateToken(refreshToken.trim())) {
+            throw new RuntimeException("Refresh token is invalid or expired");
         }
 
-        // 1. Find the specific session record
-        EmployeeRefreshToken storedToken = employeeRefreshTokenRepository.findByToken(refreshToken)
-                .orElseThrow(() -> new RuntimeException("Session invalid or logged out"));
+        String cleanToken = refreshToken.trim();
 
-        String empId = jwtUtil.extractUserId(refreshToken);
-        String hotelId = jwtUtil.extractHotelId(refreshToken);
-        String role = jwtUtil.extractRole(refreshToken);
+        // 2. THE OWNER'S CHECK (The Database Truth)
+        // If you delete this from MongoDB, the employee is KICKED OUT here.
+        EmployeeRefreshToken storedToken = employeeRefreshTokenRepository.findByToken(cleanToken)
+                .orElseThrow(() -> new RuntimeException("Employee session has been revoked. Access Denied."));
 
-        // 2. Token Rotation: Generate new Refresh Token as well
+        // 3. Extraction of Identity Claims
+        String empId = jwtUtil.extractUserId(cleanToken);
+        String hotelId = jwtUtil.extractHotelId(cleanToken);
+        String role = jwtUtil.extractRole(cleanToken);
+
+        // Security Guard: Cross-verify the token identity against the database record
+        // This prevents one employee from potentially using a stolen token structure
+        if (!storedToken.getUserId().equals(empId)) {
+            throw new RuntimeException("Identity mismatch. Security alert triggered.");
+        }
+
+        // --- 4. TOKEN ROTATION (Enterprise Production Standard) ---
+        // Generate a fresh set to replace the used ones
         String newAccessToken = jwtUtil.generateAccessToken(empId, hotelId, role);
         String newRefreshToken = jwtUtil.generateRefreshToken(empId, hotelId, role);
 
-        // 3. UPDATE existing record (Keeps count the same)
+        // 5. UPDATE the existing Database Record
+        // Overwriting the old token ensures 'maxLogins' count remains accurate (doesn't increase)
         storedToken.setToken(newRefreshToken);
         storedToken.setExpiryDate(LocalDateTime.now().plusDays(7));
         employeeRefreshTokenRepository.save(storedToken);
 
+        // 6. Return the new pair
         return Map.of(
                 "accessToken", newAccessToken,
                 "refreshToken", newRefreshToken
@@ -101,9 +115,17 @@ public class EmployeeService {
     }
 
     public void logoutEmployee(String empId, String refreshToken) {
-        // Industry Standard: Delete the SPECIFIC refresh token session
-        // This allows one device to log out without kicking other active devices
-        employeeRefreshTokenRepository.deleteByToken(refreshToken);
+        // 1. Trim to avoid Postman copy-paste spaces
+        String cleanToken = refreshToken.trim();
+
+        // 2. Call the repository instance (lowercase employeeRefreshTokenRepository)
+        Long deletedCount = employeeRefreshTokenRepository.deleteByToken(cleanToken);
+
+        if (deletedCount == 0) {
+            System.out.println("DEBUG: No token found for user " + empId + " matching: " + cleanToken);
+        } else {
+            System.out.println("DEBUG: Successfully deleted " + deletedCount + " session(s)");
+        }
     }
 
     public List<Employee> getMyStaff(String hotelId) {

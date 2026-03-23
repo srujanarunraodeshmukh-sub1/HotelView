@@ -50,18 +50,11 @@ public class EmployeeController {
 
     @PostMapping("/logout")
     public ResponseEntity<String> logout(@RequestBody Map<String, String> request) {
-        // 1. Get the current User ID from Security Context
         String empId = SecurityContextHolder.getContext().getAuthentication().getName();
+        String token = request.get("refreshToken");
 
-        // 2. Get the specific Refresh Token from the request body
-        String refreshToken = request.get("refreshToken");
-
-        if (refreshToken == null || refreshToken.isEmpty()) {
-            return ResponseEntity.badRequest().body("Refresh token is required for logout");
-        }
-
-        // 3. Call the updated service method with BOTH arguments
-        employeeService.logoutEmployee(empId, refreshToken);
+        // This call must match the (String, String) signature in the Service
+        employeeService.logoutEmployee(empId, token);
 
         return ResponseEntity.ok("Staff logged out successfully");
     }
