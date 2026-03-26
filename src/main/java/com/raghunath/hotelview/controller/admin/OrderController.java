@@ -1,5 +1,6 @@
 package com.raghunath.hotelview.controller.admin;
 
+import com.raghunath.hotelview.dto.admin.CheckoutRequest;
 import com.raghunath.hotelview.dto.admin.OrderItem;
 import com.raghunath.hotelview.entity.KitchenOrder;
 import com.raghunath.hotelview.entity.OrderDraft;
@@ -64,6 +65,12 @@ public class OrderController {
         String hotelId = SecurityContextHolder.getContext().getAuthentication().getName();
         // Fetches all orders for this table that are not yet PAID, newest at top
         return ResponseEntity.ok(orderService.getOrdersByTable(hotelId, tableNumber));
+    }
+
+    @PostMapping("/checkout")
+    public ResponseEntity<String> checkout(@RequestBody CheckoutRequest request) {
+        String hotelId = SecurityContextHolder.getContext().getAuthentication().getName();
+        return ResponseEntity.ok(orderService.checkoutOrders(hotelId, request));
     }
 
     // 5. CHEF: FETCH PENDING ORDERS (New orders only)

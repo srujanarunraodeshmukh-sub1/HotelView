@@ -73,7 +73,7 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.PATCH, "/api/v1/orders/kitchen/**").hasAnyRole("CHEF", "ADMIN")
 
 // 4. Order Operations: Waiters and Admins
-                                .requestMatchers("/api/v1/orders/draft/**", "/api/v1/orders/confirm/**", "/api/v1/orders/table/**").hasAnyRole("WAITER", "ADMIN")
+                                .requestMatchers("/api/v1/orders/draft/**", "/api/v1/orders/confirm/**", "/api/v1/orders/table/**", "/api/v1/orders/checkout").hasAnyRole("WAITER", "ADMIN")
 
                                 // 5. Logout (Requires valid Access Token to identify WHO is logging out)
                         .requestMatchers("/api/v1/admin/logout", "/api/v1/employees/logout").authenticated()

@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class HotelTableAddManual implements CommandLineRunner {
 
     // Set to true to trigger the table initialization
-    private final boolean RUN_TABLE_INIT = true;
+    private final boolean RUN_TABLE_INIT = false;
 
     // Update this to your local or Render URL
     private final String URL = "https://hotelview.onrender.com/api/v1/tables/add";

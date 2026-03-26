@@ -1,8 +1,11 @@
 package com.raghunath.hotelview.service.admin;
 
+import com.raghunath.hotelview.dto.admin.CheckoutRequest;
 import com.raghunath.hotelview.dto.admin.OrderItem;
+import com.raghunath.hotelview.entity.CompletedOrder;
 import com.raghunath.hotelview.entity.KitchenOrder;
 import com.raghunath.hotelview.entity.OrderDraft;
+import com.raghunath.hotelview.repository.CompleteOrderRepository;
 import com.raghunath.hotelview.repository.KitchenOrderRepository;
 import com.raghunath.hotelview.repository.OrderDraftRepository;
 import com.raghunath.hotelview.repository.TableRepository;
@@ -30,6 +33,7 @@ public class OrderService {
     private final TableRepository tableRepository;
     private final KitchenOrderRepository kitchenOrderRepository;
     private final MongoTemplate mongoTemplate;
+    private final CompleteOrderRepository completeOrderRepository;
     /**
      * 1. SAVE DRAFT: Waiter/Admin adds items.
      * Since the waiter has full access, this updates the live table total immediately.
@@ -168,6 +172,49 @@ public class OrderService {
         updateStatusWithChef(orderId, newStatus, null);
     }
 
+    @Transactional
+    public String checkoutOrders(String hotelId, CheckoutRequest request) {
+        // 1. Fetch all documents for the provided IDs
+        List<KitchenOrder> activeOrders = kitchenOrderRepository.findAllById(request.getOrderIds());
+
+        if (activeOrders.isEmpty()) throw new RuntimeException("No orders found to checkout");
+
+        // 2. Calculate Grand Total
+        Double grandTotal = activeOrders.stream()
+                .mapToDouble(KitchenOrder::getTotalAmount)
+                .sum();
+
+        // 3. Prepare IST Time
+        ZonedDateTime nowIST = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
+
+        // 4. Create the Archive Document
+        CompletedOrder finalBill = CompletedOrder.builder()
+                .hotelId(hotelId)
+                .orderType(activeOrders.get(0).getOrderType()) // Detects TABLE or DELIVERY
+                .customerName(request.getCustomerName())
+                .customerMobile(request.getCustomerMobile())
+                .customerAddress(request.getCustomerAddress())
+                .allOrders(activeOrders) // 👈 Nests the full documents
+                .grandTotal(grandTotal)
+                .paymentStatus("PAID")
+                .checkoutAt(nowIST.toLocalDateTime())
+                .checkoutDate(nowIST.format(DateTimeFormatter.ISO_LOCAL_DATE))
+                .checkoutTime(nowIST.format(DateTimeFormatter.ofPattern("HH:mm:ss")))
+                .build();
+
+        // 5. Save to NEW collection
+        completeOrderRepository.save(finalBill);
+
+        // 6. DELETE from Active Kitchen collection (Clean up)
+        kitchenOrderRepository.deleteAll(activeOrders);
+
+        // 7. Reset Table status if it was a table order
+        if (activeOrders.get(0).getTableNumber() != null) {
+            updateTableVisualStatus(hotelId, activeOrders.get(0).getTableNumber(), "AVAILABLE");
+        }
+
+        return "Checkout complete. Bill ID: " + finalBill.getId();
+    }
     /**
      * HELPER: Syncs the physical Table entity with the digital order status.
      */
