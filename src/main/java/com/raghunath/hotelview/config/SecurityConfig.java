@@ -99,7 +99,9 @@ public class SecurityConfig {
         configuration.setAllowedOriginPatterns(List.of(
                 "http://localhost:3000",
                 "http://localhost:5173",
-                "https://hotelview-tau.vercel.app"
+                "https://hotelview-tau.vercel.app",
+                "http://localhost",
+                "capacitor://localhost"
         ));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
