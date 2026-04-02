@@ -36,18 +36,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             if (jwtUtil.validateToken(token)) {
                 String hotelId = jwtUtil.extractHotelId(token);
-                Long versionInJwt = jwtUtil.extractVersion(token);
 
-                // 1. Fetch ALL active sessions for this hotel (Returns a List)
-                // This prevents the 'NonUniqueResultException' crash during multiple logins
-                List<AdminRefreshToken> activeSessions = tokenRepository.findByUserId(hotelId);
+                // Check if the user has an active session record in DB
+                boolean sessionExists = tokenRepository.existsByUserId(hotelId);
 
-                // 2. Check if the version in the JWT matches ANY of the active sessions in DB
-                boolean isVersionValid = activeSessions.stream()
-                        .anyMatch(session -> session.getVersion() != null &&
-                                session.getVersion().equals(versionInJwt));
-
-                if (isVersionValid) {
+                if (sessionExists) {
                     String role = jwtUtil.extractRole(token);
 
                     UsernamePasswordAuthenticationToken authentication =
@@ -60,10 +53,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 } else {
-                    // This specific session version is old/superseded by a refresh on THIS device
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     response.setContentType("application/json");
-                    response.getWriter().write("{\"error\": \"SESSION_INVALID\", \"message\": \"Session superseded. Please use latest token.\"}");
+                    response.getWriter().write("{\"error\": \"SESSION_EXPIRED\", \"message\": \"Session no longer active.\"}");
                     return;
                 }
             }

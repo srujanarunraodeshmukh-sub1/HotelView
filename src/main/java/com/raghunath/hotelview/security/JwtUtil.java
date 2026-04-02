@@ -18,18 +18,19 @@ public class JwtUtil {
     @Value("${jwt.secret}")
     private String SECRET_KEY;
 
-    private final long ACCESS_TOKEN_VALIDITY = 1000 * 60 * 2; // 1 hour for standard use
-    private final long REFRESH_TOKEN_VALIDITY = 1000 * 60 * 60 * 24 * 7; // 7 days
+    // 2 Minutes for testing as requested
+    private final long ACCESS_TOKEN_VALIDITY = 1000L * 60 * 2;
+    private final long REFRESH_TOKEN_VALIDITY = 1000L * 60 * 60 * 24 * 7; // 7 days
 
     private Key getSigningKey() {
         byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    // UPDATED: Now supports HotelId and Role
-    public String generateAccessToken(String userId, String hotelId, String role, Long version) {
+    // REMOVED 'Long version' to match your Service calls
+    public String generateAccessToken(String userId, String hotelId, String role) {
         return Jwts.builder()
-                .setClaims(Map.of("hotelId", hotelId, "role", role, "v", version))
+                .setClaims(Map.of("hotelId", hotelId, "role", role))
                 .setSubject(userId)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_VALIDITY))
@@ -37,9 +38,10 @@ public class JwtUtil {
                 .compact();
     }
 
-    public String generateRefreshToken(String userId, String hotelId, String role, Long version) {
+    // REMOVED 'Long version' to match your Service calls
+    public String generateRefreshToken(String userId, String hotelId, String role) {
         return Jwts.builder()
-                .setClaims(Map.of("hotelId", hotelId, "role", role, "v", version))
+                .setClaims(Map.of("hotelId", hotelId, "role", role))
                 .setSubject(userId)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_VALIDITY))
@@ -47,10 +49,7 @@ public class JwtUtil {
                 .compact();
     }
 
-    public Long extractVersion(String token) {
-        return extractAllClaims(token).get("v", Long.class);
-    }
-
+    // Helper to extract all claims
     private Claims extractAllClaims(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())

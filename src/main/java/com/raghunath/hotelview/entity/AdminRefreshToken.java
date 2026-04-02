@@ -14,6 +14,4 @@ public class AdminRefreshToken {
     private String token;
     private LocalDateTime expiryDate;
 
-    // --- ADD THIS FIELD ---
-    private Long version;
 }

@@ -25,11 +25,9 @@ public class AdminAuthService {
     private final BCryptPasswordEncoder passwordEncoder;
 
     public LoginResponse login(LoginRequest request) {
-
         Admin admin = adminRepository.findByMobile(request.getMobile())
                 .orElseThrow(() -> new RuntimeException("Admin not found"));
 
-        // 1. Basic Security Checks
         if (!admin.isApproved()) throw new RuntimeException("Hotel not approved.");
         if (!admin.isActive()) throw new RuntimeException("Subscription inactive.");
 
@@ -37,27 +35,22 @@ public class AdminAuthService {
             throw new RuntimeException("Invalid password");
         }
 
-        // --- 2. STRICT BLOCK LOGIC ---
-        // Count existing sessions for this hotelId/admin
+        // STRICT BLOCK LOGIC
         long activeSessions = adminRefreshTokenRepository.countByUserId(admin.getHotelId());
-
-        // Use maxLogins from entity (default to 1 if not set)
         int allowedLogins = (admin.getMaxLogins() > 0) ? admin.getMaxLogins() : 1;
 
         if (activeSessions >= allowedLogins) {
-            throw new RuntimeException("Login limit reached (" + allowedLogins +
-                    "). Please logout from another device first.");
+            throw new RuntimeException("Login limit reached (" + allowedLogins + "). Please logout elsewhere.");
         }
 
-        Long initialVersion = 1L;
-        // 3. Generate Tokens
-        String accessToken = jwtUtil.generateAccessToken(admin.getHotelId(), admin.getHotelId(), "ADMIN", initialVersion);
-        String refreshToken = jwtUtil.generateRefreshToken(admin.getHotelId(), admin.getHotelId(), "ADMIN", initialVersion);
-        // 4. Save New Session to Database
+        // Generate Tokens (Version arguments removed)
+        String accessToken = jwtUtil.generateAccessToken(admin.getHotelId(), admin.getHotelId(), "ADMIN");
+        String refreshToken = jwtUtil.generateRefreshToken(admin.getHotelId(), admin.getHotelId(), "ADMIN");
+
+        // Save New Session
         AdminRefreshToken adminToken = AdminRefreshToken.builder()
                 .userId(admin.getHotelId())
                 .token(refreshToken)
-                .version(initialVersion) // Ensure this field exists in your RefreshToken entity
                 .expiryDate(LocalDateTime.now().plusDays(7))
                 .build();
 
@@ -70,25 +63,24 @@ public class AdminAuthService {
     }
 
     public Map<String, String> refreshAdminToken(String oldRefreshToken) {
-        // 1. Fetch the stored session from DB using the old token string
+        // 1. Find existing session by token string
         AdminRefreshToken storedToken = adminRefreshTokenRepository.findByToken(oldRefreshToken.trim())
-                .orElseThrow(() -> new RuntimeException("Session revoked."));
+                .orElseThrow(() -> new RuntimeException("Session revoked or invalid."));
 
-        // 2. EXTRACTION: You must define these variables by extracting them from the token
+        // 2. Extract identity
         String adminId = jwtUtil.extractUserId(oldRefreshToken);
         String hotelId = jwtUtil.extractHotelId(oldRefreshToken);
         String role = jwtUtil.extractRole(oldRefreshToken);
 
-        // 3. Increment version for this specific session
-        Long newVersion = (storedToken.getVersion() != null ? storedToken.getVersion() : 1L) + 1;
+        // 3. Generate NEW pair (Version removed)
+        String newAccess = jwtUtil.generateAccessToken(adminId, hotelId, role);
+        String newRefresh = jwtUtil.generateRefreshToken(adminId, hotelId, role);
 
-        // 4. Generate new tokens using the extracted variables and the new version
-        String newAccess = jwtUtil.generateAccessToken(adminId, hotelId, role, newVersion);
-        String newRefresh = jwtUtil.generateRefreshToken(adminId, hotelId, role, newVersion);
-
-        // 5. Update only THIS session row in the database
+        // 4. UPDATE existing document (overwrites old token and expiry)
         storedToken.setToken(newRefresh);
-        storedToken.setVersion(newVersion);
+        storedToken.setExpiryDate(LocalDateTime.now().plusDays(7));
+
+        // This updates the existing record in MongoDB
         adminRefreshTokenRepository.save(storedToken);
 
         return Map.of(
@@ -96,16 +88,9 @@ public class AdminAuthService {
                 "refreshToken", newRefresh
         );
     }
+
     @Transactional
     public void logoutAdmin(String refreshToken) {
-        // Trim the token to remove any accidental spaces/newlines from Postman
-        Long deletedCount = adminRefreshTokenRepository.deleteByToken(refreshToken.trim());
-
-        if (deletedCount == 0) {
-            System.out.println("DEBUG: No token found in DB matching: " + refreshToken);
-            // This confirms if the token was missing or the query failed
-        } else {
-            System.out.println("DEBUG: Successfully deleted " + deletedCount + " session(s)");
-        }
+        adminRefreshTokenRepository.deleteByToken(refreshToken.trim());
     }
 }

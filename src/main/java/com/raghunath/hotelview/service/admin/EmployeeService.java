@@ -30,7 +30,6 @@ public class EmployeeService {
         emp.setHotelId(hotelId);
         emp.setPassword(passwordEncoder.encode(emp.getPassword()));
         emp.setActive(true);
-        // Ensure maxLogins is set (defaulting to 1 if not provided in request)
         if (emp.getMaxLogins() <= 0) emp.setMaxLogins(1);
 
         employeeRepository.save(emp);
@@ -51,17 +50,13 @@ public class EmployeeService {
                 throw new RuntimeException("Login limit reached (" + emp.getMaxLogins() + "). Logout elsewhere.");
             }
 
-            // 1. Initialize Version (Start at 1 or use existing if you prefer)
-            Long initialVersion = 1L;
-
-            // 2. Pass the 4th argument (version) to fix the error
-            String accessToken = jwtUtil.generateAccessToken(emp.getId(), emp.getHotelId(), emp.getRole(), initialVersion);
-            String refreshToken = jwtUtil.generateRefreshToken(emp.getId(), emp.getHotelId(), emp.getRole(), initialVersion);
+            // Generate Tokens (3 arguments only - version removed)
+            String accessToken = jwtUtil.generateAccessToken(emp.getId(), emp.getHotelId(), emp.getRole());
+            String refreshToken = jwtUtil.generateRefreshToken(emp.getId(), emp.getHotelId(), emp.getRole());
 
             EmployeeRefreshToken et = EmployeeRefreshToken.builder()
                     .userId(emp.getId())
                     .token(refreshToken)
-                    .version(initialVersion) // Save the version in DB
                     .expiryDate(LocalDateTime.now().plusDays(7))
                     .build();
             employeeRefreshTokenRepository.save(et);
@@ -83,6 +78,7 @@ public class EmployeeService {
 
         String cleanToken = refreshToken.trim();
 
+        // Find the existing session document
         EmployeeRefreshToken storedToken = employeeRefreshTokenRepository.findByToken(cleanToken)
                 .orElseThrow(() -> new RuntimeException("Session revoked."));
 
@@ -94,16 +90,12 @@ public class EmployeeService {
             throw new RuntimeException("Identity mismatch.");
         }
 
-        // --- VERSION KILLER LOGIC ---
-        // 3. Increment the version to kill old access tokens
-        Long newVersion = (storedToken.getVersion() != null ? storedToken.getVersion() : 1L) + 1;
+        // Generate NEW pair (3 arguments only)
+        String newAccessToken = jwtUtil.generateAccessToken(empId, hotelId, role);
+        String newRefreshToken = jwtUtil.generateRefreshToken(empId, hotelId, role);
 
-        // 4. Pass the newVersion as the 4th argument
-        String newAccessToken = jwtUtil.generateAccessToken(empId, hotelId, role, newVersion);
-        String newRefreshToken = jwtUtil.generateRefreshToken(empId, hotelId, role, newVersion);
-
+        // UPDATE the existing document (Rotation)
         storedToken.setToken(newRefreshToken);
-        storedToken.setVersion(newVersion); // Update version in DB
         storedToken.setExpiryDate(LocalDateTime.now().plusDays(7));
         employeeRefreshTokenRepository.save(storedToken);
 
@@ -114,17 +106,7 @@ public class EmployeeService {
     }
 
     public void logoutEmployee(String empId, String refreshToken) {
-        // 1. Trim to avoid Postman copy-paste spaces
-        String cleanToken = refreshToken.trim();
-
-        // 2. Call the repository instance (lowercase employeeRefreshTokenRepository)
-        Long deletedCount = employeeRefreshTokenRepository.deleteByToken(cleanToken);
-
-        if (deletedCount == 0) {
-            System.out.println("DEBUG: No token found for user " + empId + " matching: " + cleanToken);
-        } else {
-            System.out.println("DEBUG: Successfully deleted " + deletedCount + " session(s)");
-        }
+        employeeRefreshTokenRepository.deleteByToken(refreshToken.trim());
     }
 
     public List<Employee> getMyStaff(String hotelId) {
