@@ -1,6 +1,7 @@
 package com.raghunath.hotelview.controller.admin;
 
 import com.raghunath.hotelview.dto.admin.CheckoutRequest;
+import com.raghunath.hotelview.dto.admin.DashboardStatsDTO;
 import com.raghunath.hotelview.dto.admin.OrderItem;
 import com.raghunath.hotelview.entity.CompletedOrder;
 import com.raghunath.hotelview.entity.KitchenOrder;
@@ -102,6 +103,12 @@ public class OrderController {
     public ResponseEntity<String> completeOrder(@PathVariable String orderId) {
         orderService.updateOrderStatus(orderId, "COMPLETED");
         return ResponseEntity.ok("Order marked as COMPLETED");
+    }
+
+    @GetMapping("/dashboard/stats")
+    public ResponseEntity<DashboardStatsDTO> getDashboardStats() {
+        String hotelId = getAuthenticatedUserId();
+        return ResponseEntity.ok(orderService.getDashboardStats(hotelId));
     }
 
     // 9. FETCH COMPLETED ORDERS (Ready to be served)

@@ -3,6 +3,7 @@ package com.raghunath.hotelview.repository;
 import com.raghunath.hotelview.entity.CompletedOrder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import java.util.List;
@@ -16,6 +17,12 @@ public interface CompleteOrderRepository extends MongoRepository<CompletedOrder,
     List<CompletedOrder> findByHotelIdAndCheckoutDateBetween(String hotelId, String startDate, String endDate);
     List<CompletedOrder> findByHotelIdAndOrderTypeAndCheckoutDateOrderByCheckoutAtDesc(
             String hotelId, String orderType, String checkoutDate);
+
+    Long countByHotelIdAndCheckoutDate(String hotelId, String checkoutDate);
+
+    // MongoDB Aggregation for Sum
+    @Aggregation("{ $match: { hotelId: ?0, checkoutDate: ?1 } }, { $group: { _id: null, total: { $sum: '$grandTotal' } } }")
+    Double sumGrandTotalByHotelIdAndCheckoutDate(String hotelId, String checkoutDate);
 
     // --- NEW: Paging API (Only fetches ID, Name, Mobile, Date, and Total) ---
     // In CompleteOrderRepository.java

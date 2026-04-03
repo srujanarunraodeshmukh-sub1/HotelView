@@ -1,9 +1,6 @@
 package com.raghunath.hotelview.service.admin;
 
-import com.raghunath.hotelview.dto.admin.CheckoutRequest;
-import com.raghunath.hotelview.dto.admin.DeliverySummaryDTO;
-import com.raghunath.hotelview.dto.admin.ReceiptResponse;
-import com.raghunath.hotelview.dto.admin.OrderItem;
+import com.raghunath.hotelview.dto.admin.*;
 import com.raghunath.hotelview.entity.Admin;
 import com.raghunath.hotelview.entity.CompletedOrder;
 import com.raghunath.hotelview.entity.KitchenOrder;
@@ -37,6 +34,8 @@ public class OrderService {
     private final OrderDraftRepository draftRepository;
     private final AdminRepository adminRepository;
     private final TableRepository tableRepository;
+    private final EmployeeRepository employeeRepository;
+    private final MenuItemRepository menuItemRepository;
     private final KitchenOrderRepository kitchenOrderRepository;
     private final MongoTemplate mongoTemplate;
     private final CompleteOrderRepository completeOrderRepository;
@@ -239,7 +238,7 @@ public class OrderService {
     }
     // --- API 1: Paged Fetch (5 at a time) ---
     public Page<CompletedOrder> getCompletedOrdersPaged(String hotelId, int pageNumber) {
-        Pageable pageable = PageRequest.of(pageNumber, 5, Sort.by("checkoutAt").descending());
+        Pageable pageable = PageRequest.of(pageNumber, 10, Sort.by("checkoutAt").descending());
         return completeOrderRepository.findByHotelId(hotelId, pageable);
     }
 
@@ -329,6 +328,55 @@ public class OrderService {
                         .checkoutAt(order.getCheckoutAt())
                         .build())
                 .collect(Collectors.toList());
+    }
+
+    // Inside OrderService.java (Add the new method)
+
+    /**
+     * FETCH DASHBOARD STATS: Consolidates metrics from 5 different collections.
+     */
+    public DashboardStatsDTO getDashboardStats(String hotelId) {
+        // 1. Time Setup (Indian Standard Time)
+        ZonedDateTime nowIST = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
+        String todayDate = nowIST.format(DateTimeFormatter.ISO_LOCAL_DATE); // yyyy-MM-dd
+
+        // 2. Fetch Metrics from respective Repositories
+
+        // Table Stats: Tables where status is ACTIVE
+        Long activeTables = tableRepository.countByHotelIdAndStatus(hotelId, "ACTIVE");
+
+        // Delivery Stats: KitchenOrders where type is Delivery and status is PENDING
+        Long pendingDeliveries = kitchenOrderRepository.countByHotelIdAndOrderTypeAndStatus(
+                hotelId, "HOME_DELIVERY", "PENDING");
+
+        // Employee Stats: Count all active employees (we will add 'onlineStatus' later)
+        Long employeeCount = employeeRepository.countByHotelIdAndIsActive(hotelId, true);
+
+        // Menu Item Stats: Count all items for this hotel
+        Long totalItems = menuItemRepository.countByHotelId(hotelId);
+
+        // 3. Financial/Archive Metrics (CompletedOrder Collection)
+
+        // Completed Orders Today count
+        Long completedTodayCount = completeOrderRepository.countByHotelIdAndCheckoutDate(
+                hotelId, todayDate);
+
+        // Todays Sales Rupees till now
+        Double todaySalesRupees = completeOrderRepository.sumGrandTotalByHotelIdAndCheckoutDate(
+                hotelId, todayDate);
+
+        // Handle potential null from sum aggregation
+        double finalTodaySales = todaySalesRupees != null ? todaySalesRupees : 0.0;
+
+        // 4. Build and return the consolidated DTO
+        return DashboardStatsDTO.builder()
+                .activeTablesCount(activeTables)
+                .pendingHomeDeliveriesCount(pendingDeliveries)
+                .completedOrdersTodayCount(completedTodayCount)
+                .employeeOnlineCount(employeeCount)
+                .totalItemsCount(totalItems)
+                .todaySalesRupees(finalTodaySales)
+                .build();
     }
 
     private void updateTableBill(String hotelId, Integer tableNumber, Double amountToAdd, boolean isReset) {

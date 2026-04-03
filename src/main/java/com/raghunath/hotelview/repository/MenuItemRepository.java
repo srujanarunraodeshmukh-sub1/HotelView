@@ -20,6 +20,7 @@ public interface MenuItemRepository extends MongoRepository<MenuItem,String> {
     Optional<MenuItem> findByHotelIdAndName(String hotelId, String name);
 
     Page<MenuItem> findByHotelIdAndIsApprovedTrue(String hotelId, Pageable pageable);
+    Long countByHotelId(String hotelId);
 
     // In MenuItemRepository.java
     @Query("{ 'hotelId': ?0, 'name': { $regex: '^?1', $options: 'i' }, 'isApproved': true }")
