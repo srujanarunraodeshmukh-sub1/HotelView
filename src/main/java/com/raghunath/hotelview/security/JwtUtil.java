@@ -19,7 +19,7 @@ public class JwtUtil {
     private String SECRET_KEY;
 
     // 2 Minutes for testing as requested
-    private final long ACCESS_TOKEN_VALIDITY = 1000L * 60 * 2;
+    private final long ACCESS_TOKEN_VALIDITY = 1000L * 60 * 15;
     private final long REFRESH_TOKEN_VALIDITY = 1000L * 60 * 60 * 24 * 7; // 7 days
 
     private Key getSigningKey() {
