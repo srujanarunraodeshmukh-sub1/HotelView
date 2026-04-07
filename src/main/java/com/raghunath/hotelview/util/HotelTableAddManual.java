@@ -22,13 +22,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Profile("dev") // Runs only when spring.profiles.active=dev
 public class HotelTableAddManual implements CommandLineRunner {
 
-    // Set to true to trigger the table initialization
     private final boolean RUN_TABLE_INIT = false;
-
-    // Update this to your local or Render URL
     private final String URL = "https://hotelview.onrender.com/api/v1/tables/add";
 
-    // PASTE YOUR FRESH TOKEN HERE (Ensure it hasn't expired!)
+    // PASTE YOUR FRESH TOKEN HERE
     private final String ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiQURNSU4iLCJob3RlbElkIjoiaG90ZWwwMDEiLCJzdWIiOiJob3RlbDAwMSIsImlhdCI6MTc3NDQ0NDQ1OSwiZXhwIjoxNzc0NDQ4MDU5fQ.SahmZcKraAVWpQM5nrIVWq3gnoNWy8a5WCTkhobuC4A";
 
     @Override

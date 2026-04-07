@@ -14,6 +14,8 @@ public class MenuItemRequest {
 
     private String name;
 
+    private String shortCode;
+
     private String description;
 
     private BigDecimal price;

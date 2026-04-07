@@ -22,8 +22,9 @@ public class MenuItemController {
     @PostMapping("/add")
     public ApiResponse addMenuItem(@RequestBody MenuItemRequest request){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String adminId = auth.getName();
-        String message = menuItemService.addMenuItem(request, adminId);
+        String hotelId = auth.getName();
+        // Passing the hotelId (adminId) and the request containing the manual shortCode
+        String message = menuItemService.addMenuItem(request, hotelId);
         return new ApiResponse(message);
     }
 
@@ -31,37 +32,30 @@ public class MenuItemController {
     public Page<MenuItem> getAllMenuItems(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String hotelId = auth.getName();
+        String hotelId = SecurityContextHolder.getContext().getAuthentication().getName();
         return menuItemService.getAllHotelItems(hotelId, page, size);
     }
 
     @GetMapping("/category")
     public List<MenuItem> getCategoryItems(@RequestParam String category){
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String adminId = auth.getName();
-        return menuItemService.getCategoryItems(adminId,category);
+        String hotelId = SecurityContextHolder.getContext().getAuthentication().getName();
+        return menuItemService.getCategoryItems(hotelId, category);
     }
 
     /**
-     * PRODUCTION GRADE: SMART SEARCH
-     * This replaces the old exact name search.
-     * It returns a list of items matching the query (with typo tolerance).
+     * PRODUCTION GRADE: SHORTCODE + NAME SEARCH
+     * Prioritizes items where the shortCode matches exactly first.
      */
     @GetMapping("/search")
     public List<MenuItem> searchMenuItems(@RequestParam String query) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String hotelId = auth.getName();
-
-        // Calls the Atlas Search logic in the service
+        String hotelId = SecurityContextHolder.getContext().getAuthentication().getName();
+        // Now calls the updated service logic for prioritized search
         return menuItemService.searchMenuItems(hotelId, query);
     }
 
-    // Keep this for fetching a specific item's full details by exact name if needed
     @GetMapping("/details")
     public MenuItem getMenuItemByName(@RequestParam String name) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String hotelId = auth.getName();
+        String hotelId = SecurityContextHolder.getContext().getAuthentication().getName();
         return menuItemService.getMenuItemByHotelAndName(hotelId, name);
     }
 }
