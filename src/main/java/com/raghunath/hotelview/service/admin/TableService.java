@@ -49,4 +49,21 @@ public class TableService {
 
         return tableRepository.save(existingTable);
     }
+
+    public void deleteTable(String id, String hotelId) {
+        RestaurantTable table = tableRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Table not found with id: " + id));
+
+        // Security Check
+        if (!table.getHotelId().equals(hotelId)) {
+            throw new RuntimeException("Unauthorized: You cannot delete this table");
+        }
+
+        // Production Safety Check: Don't delete if the table is currently occupied
+        if (!"INACTIVE".equalsIgnoreCase(table.getStatus())) {
+            throw new RuntimeException("Cannot delete table while it is " + table.getStatus());
+        }
+
+        tableRepository.delete(table);
+    }
 }

@@ -37,4 +37,12 @@ public class TableController {
         String hotelId = SecurityContextHolder.getContext().getAuthentication().getName();
         return ResponseEntity.ok(tableService.updateTable(id, hotelId, tableDetails));
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteTable(@PathVariable String id) {
+        String hotelId = SecurityContextHolder.getContext().getAuthentication().getName();
+        tableService.deleteTable(id, hotelId);
+        return ResponseEntity.ok("Table deleted successfully");
+    }
+
 }
