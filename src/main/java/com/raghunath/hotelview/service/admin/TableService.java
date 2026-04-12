@@ -22,7 +22,7 @@ public class TableService {
     public RestaurantTable saveTable(String hotelId, RestaurantTable table) {
         table.setHotelId(hotelId);
         // Default values for new tables
-        if (table.getStatus() == null) table.setStatus("Vacant");
+        if (table.getStatus() == null) table.setStatus("InActive");
         if (table.getCurrentBill() == null) table.setCurrentBill(0.0);
         return tableRepository.save(table);
     }
@@ -31,5 +31,22 @@ public class TableService {
     public void deleteTable(String hotelId, int tableNumber) {
         tableRepository.findByHotelIdAndTableNumber(hotelId, tableNumber)
                 .ifPresent(tableRepository::delete);
+    }
+
+    public RestaurantTable updateTable(String id, String hotelId, RestaurantTable details) {
+        RestaurantTable existingTable = tableRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Table not found with id: " + id));
+
+        // Security Check: Ensure table belongs to the logged-in hotel
+        if (!existingTable.getHotelId().equals(hotelId)) {
+            throw new RuntimeException("Unauthorized: This table does not belong to your hotel");
+        }
+
+        // Update fields
+        if (details.getTableNumber() != null) existingTable.setTableNumber(details.getTableNumber());
+        if (details.getSeatingCapacity() != null) existingTable.setSeatingCapacity(details.getSeatingCapacity());
+        if (details.getStatus() != null) existingTable.setStatus(details.getStatus());
+
+        return tableRepository.save(existingTable);
     }
 }

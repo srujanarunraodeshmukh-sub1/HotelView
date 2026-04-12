@@ -297,6 +297,8 @@ public class OrderService {
                 .restaurantName(admin.getRestaurantName())
                 .restaurantAddress(admin.getRestaurantAddress())
                 .restaurantContact(admin.getRestaurantContact())
+                .restaurantLogo(admin.getRestaurantLogo())
+                .restaurantUpi(admin.getRestaurantUpi())
                 .orderId(order.getId())
                 .date(order.getCheckoutDate())
                 .time(order.getCheckoutTime())

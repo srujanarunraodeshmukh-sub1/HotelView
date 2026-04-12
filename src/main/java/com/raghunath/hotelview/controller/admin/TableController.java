@@ -29,4 +29,12 @@ public class TableController {
         String hotelId = SecurityContextHolder.getContext().getAuthentication().getName();
         return ResponseEntity.ok(tableService.saveTable(hotelId, table));
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<RestaurantTable> updateTable(
+            @PathVariable String id,
+            @RequestBody RestaurantTable tableDetails) {
+        String hotelId = SecurityContextHolder.getContext().getAuthentication().getName();
+        return ResponseEntity.ok(tableService.updateTable(id, hotelId, tableDetails));
+    }
 }

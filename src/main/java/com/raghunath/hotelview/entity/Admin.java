@@ -35,5 +35,7 @@ public class Admin {
     private String restaurantName;
     private String restaurantAddress;
     private String restaurantContact;
+    private String restaurantLogo;
+    private String restaurantUpi;
 
 }

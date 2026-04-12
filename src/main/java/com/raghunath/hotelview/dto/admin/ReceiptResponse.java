@@ -12,6 +12,9 @@ public class ReceiptResponse {
     private String restaurantName;
     private String restaurantAddress;
     private String restaurantContact;
+    private String restaurantLogo;
+    private String restaurantUpi;
+
 
     // Order Data
     private String orderId;

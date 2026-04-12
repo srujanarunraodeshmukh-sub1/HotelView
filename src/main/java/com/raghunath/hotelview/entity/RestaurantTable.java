@@ -12,7 +12,9 @@ public class RestaurantTable {
     private String hotelId;
 
     private Integer tableNumber; // 👈 Change from 'int' to 'Integer'
-    private int capacity;
+
+    @org.springframework.data.mongodb.core.mapping.Field("seatingCapacity")
+    private Integer seatingCapacity;
     private String status;
     private Double currentBill;
 }
