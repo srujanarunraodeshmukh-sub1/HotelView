@@ -43,6 +43,7 @@ public class OrderService {
     private final MongoTemplate mongoTemplate;
     private final CompleteOrderRepository completeOrderRepository;
     private final SalesAggregationRepository salesAggregationRepository;
+    private final VersionService versionService;
 
     private static final ZoneId IST = ZoneId.of("Asia/Kolkata");
     /**
@@ -115,14 +116,14 @@ public class OrderService {
     }
 
     @Transactional
-    public String confirmHomeDelivery(String hotelId, List<OrderItem> items, String waiterId) {
+    public String confirmHomeDelivery(String hotelId, List<OrderItem> items, String waiterId, String orderType) {
         ZonedDateTime nowIST = getISTNow();
         Double total = items.stream().mapToDouble(OrderItem::getSubTotal).sum();
 
         KitchenOrder deliveryOrder = KitchenOrder.builder()
                 .hotelId(hotelId)
-                .tableNumber(null) // Keep null for delivery
-                .orderType("HOME_DELIVERY")
+                .tableNumber(null)
+                .orderType(orderType.toUpperCase()) // Save the user-provided type
                 .items(items)
                 .totalAmount(total)
                 .status("PENDING")
@@ -132,7 +133,13 @@ public class OrderService {
                 .createdTime(nowIST.format(DateTimeFormatter.ofPattern("HH:mm:ss")))
                 .build();
 
-        return kitchenOrderRepository.save(deliveryOrder).getId();
+        String savedId = kitchenOrderRepository.save(deliveryOrder).getId();
+
+        // 🚀 SYNC TRIGGER: Tell the Chef and Admin a new order arrived
+        // Even though there's no table, the Chef's "Pending Orders" version needs to bump
+        versionService.bumpTables(hotelId);
+
+        return savedId;
     }
     /**
      * 4. FETCH TABLE ORDERS: Latest orders first.
@@ -151,35 +158,36 @@ public class OrderService {
         KitchenOrder order = kitchenOrderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 
-        Query query = new Query(Criteria.where("id").is(orderId));
-        Update update = new Update();
-        update.set("status", newStatus.toUpperCase());
+        // ✅ Set updatedAt directly on entity and save
+        order.setStatus(newStatus.toUpperCase());
+        order.setUpdatedAt(LocalDateTime.now());
 
         if ("PREPARING".equalsIgnoreCase(newStatus)) {
-            update.set("acceptedBy", userId);
+            order.setAcceptedBy(userId);
         }
 
-        mongoTemplate.updateFirst(query, update, KitchenOrder.class);
+        kitchenOrderRepository.save(order);
+
+        // Bump kitchen version so Krishna knows something changed
+        versionService.bumpKitchen(order.getHotelId());
 
         // Syncing Table Status
-        if ("TABLE".equalsIgnoreCase(order.getOrderType()) && order.getTableNumber() != null) {
-            String tableUIStatus;
+        if ("TABLE".equalsIgnoreCase(order.getOrderType())
+                && order.getTableNumber() != null) {
 
-            switch (newStatus.toUpperCase()) {
-                case "ACCEPTED":
-                case "PREPARING":
-                    tableUIStatus = "ACCEPTED";
-                    break;
-                case "COMPLETED":
-                    tableUIStatus = "ACTIVE"; // Chef finished, customer is eating
-                    break;
-                default:
-                    tableUIStatus = newStatus.toUpperCase();
-            }
+            String tableUIStatus = switch (newStatus.toUpperCase()) {
+                case "ACCEPTED", "PREPARING" -> "ACCEPTED";
+                case "COMPLETED" -> "ACTIVE";
+                default -> newStatus.toUpperCase();
+            };
 
-            updateTableVisualStatus(order.getHotelId(), order.getTableNumber(), tableUIStatus);
+            updateTableVisualStatus(order.getHotelId(),
+                    order.getTableNumber(), tableUIStatus);
         }
-    }/**
+    }
+
+
+    /**
      * 6. GENERAL STATUS UPDATE: Fallback for direct status changes.
      */
     public void updateOrderStatus(String orderId, String newStatus) {
@@ -223,19 +231,26 @@ public class OrderService {
                 .checkoutAt(nowIST.toLocalDateTime())
                 .checkoutDate(nowIST.format(DateTimeFormatter.ISO_LOCAL_DATE))
                 .checkoutTime(nowIST.format(DateTimeFormatter.ofPattern("HH:mm:ss")))
+                .lastModified(LocalDateTime.now())
                 .build();
 
         // 4. Save and Cleanup
         CompletedOrder savedBill = completeOrderRepository.save(finalBill);
         if (savedBill.getId() != null) {
             kitchenOrderRepository.deleteAll(activeOrders);
-            Integer tableNum = activeOrders.get(0).getTableNumber();
-            if ("TABLE".equalsIgnoreCase(activeOrders.get(0).getOrderType()) && tableNum != null) {
-                updateTableVisualStatus(hotelId, tableNum, "INACTIVE");
-                updateTableBill(hotelId, tableNum, 0.0, true);
-            }
-        }
 
+            KitchenOrder first = activeOrders.get(0);
+            if ("TABLE".equalsIgnoreCase(first.getOrderType()) && first.getTableNumber() != null) {
+                updateTableVisualStatus(hotelId, first.getTableNumber(), "INACTIVE");
+                updateTableBill(hotelId, first.getTableNumber(), 0.0, true);
+
+                // 🚀 Tell Waiters: Table is free
+                versionService.bumpTables(hotelId);
+            }
+
+            // 🚀 Tell Admins: New Sales Data available
+            versionService.bumpSales(hotelId);
+        }
         return savedBill.getId();
     }
     // --- API 1: Paged Fetch (5 at a time) ---
@@ -325,6 +340,7 @@ public class OrderService {
 
         tableRepository.findByHotelIdAndTableNumber(hotelId, tableNumber).ifPresent(t -> {
             t.setStatus(status);
+            t.setUpdatedAt(LocalDateTime.now());
             tableRepository.save(t);
         });
     }
@@ -416,6 +432,7 @@ public class OrderService {
                 Double existingBill = table.getCurrentBill() != null ? table.getCurrentBill() : 0.0;
                 table.setCurrentBill(existingBill + amountToAdd);
             }
+            table.setUpdatedAt(LocalDateTime.now());
             tableRepository.save(table);
             log.info("BILL_SYNC: Hotel {} Table {} updated to {}", hotelId, tableNumber, table.getCurrentBill());
         });

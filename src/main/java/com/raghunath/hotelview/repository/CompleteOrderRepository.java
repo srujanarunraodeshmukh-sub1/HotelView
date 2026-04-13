@@ -6,6 +6,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
+
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface CompleteOrderRepository extends MongoRepository<CompletedOrder, String> {
@@ -38,6 +40,13 @@ public interface CompleteOrderRepository extends MongoRepository<CompletedOrder,
     @Query(value = "{ 'hotelId': ?0, $or: [ { 'customerName': { $regex: ?1, $options: 'i' } }, { 'customerMobile': { $regex: ?1 } } ] }")
     List<CompletedOrder> searchOrders(String hotelId, String searchString);
 
+    // For delta sync — orders modified after a timestamp
+    List<CompletedOrder> findByHotelIdAndLastModifiedAfterOrderByLastModifiedDesc(
+            String hotelId, LocalDateTime since);
+
+    // For today's full data
+    List<CompletedOrder> findByHotelIdAndCheckoutDateOrderByCheckoutAtDesc(
+            String hotelId, String checkoutDate);
     // Inside CompleteOrderRepository.java
 
 
@@ -48,4 +57,6 @@ public interface CompleteOrderRepository extends MongoRepository<CompletedOrder,
             "{ '$group': { '_id': null, 'total': { '$sum': '$totalPayable' } } }"
     })
     Double sumTotalPayableByHotelIdAndCheckoutDate(String hotelId, String checkoutDate);
+
+    long countByHotelId(String hotelId);
 }

@@ -5,6 +5,8 @@ import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -35,4 +37,6 @@ public class KitchenOrder {
     private LocalDateTime createdAt;
     private String createdDate;
     private String createdTime;
+    @Field("updatedAt")
+    private LocalDateTime updatedAt;
 }

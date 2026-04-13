@@ -2,6 +2,8 @@ package com.raghunath.hotelview.repository;
 
 import com.raghunath.hotelview.entity.KitchenOrder;
 import org.springframework.data.mongodb.repository.MongoRepository;
+
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface KitchenOrderRepository extends MongoRepository<KitchenOrder, String> {
@@ -16,4 +18,10 @@ public interface KitchenOrderRepository extends MongoRepository<KitchenOrder, St
 
     Long countByHotelIdAndOrderTypeAndStatus(String hotelId, String orderType, String status);
     Long countByHotelIdAndOrderTypeAndCreatedDate(String hotelId, String orderType, String createdDate);
+
+    long countByHotelIdAndTableNumberAndStatusNot(
+            String hotelId, Integer tableNumber, String status);
+
+    List<KitchenOrder> findByHotelIdAndTableNumberAndUpdatedAtAfterOrderByCreatedAtDesc(
+            String hotelId, Integer tableNumber, LocalDateTime updatedAt);
 }

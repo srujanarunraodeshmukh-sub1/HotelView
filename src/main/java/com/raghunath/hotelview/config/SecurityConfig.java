@@ -60,7 +60,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // 1. Public Endpoints (No Token Required)
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/api/v1/admin/login", "/api/v1/employees/login").permitAll()
+                        .requestMatchers("/api/v1/admin/login", "/api/v1/employees/login", "/api/v1/sync/test-bump").permitAll()
 
                         // Allow Refreshing without an active Access Token
                         .requestMatchers("/api/v1/admin/refresh-token", "/api/v1/employees/refresh-token").permitAll()

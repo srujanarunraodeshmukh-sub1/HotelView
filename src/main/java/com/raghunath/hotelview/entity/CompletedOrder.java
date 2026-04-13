@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import org.springframework.data.annotation.LastModifiedDate;
 
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 @Document(collection = "completed_orders")
@@ -28,6 +29,7 @@ public class CompletedOrder {
     private Double discountPercent;
 
     private Double discountAmount;
+    private LocalDateTime lastModified;
 
     private Double totalPayable;
 

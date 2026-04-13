@@ -1,9 +1,6 @@
 package com.raghunath.hotelview.controller.admin;
 
-import com.raghunath.hotelview.dto.admin.CheckoutRequest;
-import com.raghunath.hotelview.dto.admin.DashboardStatsDTO;
-import com.raghunath.hotelview.dto.admin.OrderItem;
-import com.raghunath.hotelview.dto.admin.OrderRequest;
+import com.raghunath.hotelview.dto.admin.*;
 import com.raghunath.hotelview.entity.CompletedOrder;
 import com.raghunath.hotelview.entity.KitchenOrder;
 import com.raghunath.hotelview.entity.OrderDraft;
@@ -15,6 +12,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -65,12 +63,15 @@ public class OrderController {
 
     // 2. PLACE HOME DELIVERY ORDER
     @PostMapping("/confirm/delivery")
-    public ResponseEntity<String> confirmHomeDelivery(@Valid @RequestBody List<OrderItem> items) {
+    public ResponseEntity<String> confirmHomeDelivery(@Valid @RequestBody DeliveryRequest request) {
         String hotelId = SecurityContextHolder.getContext().getAuthentication().getName();
         String waiterId = getAuthenticatedUserId();
 
-        String orderId = orderService.confirmHomeDelivery(hotelId, items, waiterId);
-        return ResponseEntity.ok("Home delivery order sent to kitchen. ID: " + orderId);
+        // Default to HOME_DELIVERY if user sends null/empty
+        String type = StringUtils.hasText(request.getOrderType()) ? request.getOrderType() : "HOME_DELIVERY";
+
+        String orderId = orderService.confirmHomeDelivery(hotelId, request.getItems(), waiterId, type);
+        return ResponseEntity.ok("Order sent to kitchen. ID: " + orderId);
     }
 
     // 4. FETCH SPECIFIC TABLE ORDERS (Latest First)

@@ -6,7 +6,12 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+@ToString // 💡 Added for better logging
 public class OrderItem {
+
+    @NotBlank(message = "Item ID is required")
+    private String itemId; // 👈 Add this field to match your JSON
+
     @NotBlank(message = "Item name is required")
     private String itemName;
 

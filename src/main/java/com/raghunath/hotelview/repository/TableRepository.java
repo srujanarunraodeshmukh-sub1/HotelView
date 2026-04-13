@@ -3,6 +3,7 @@ package com.raghunath.hotelview.repository;
 import com.raghunath.hotelview.entity.RestaurantTable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,4 +22,9 @@ public interface TableRepository extends MongoRepository<RestaurantTable, String
     Long countByHotelIdAndStatusNot(String hotelId, String status);
 
     Long countByHotelIdAndStatusIn(String hotelId, List<String> statuses);
+
+    long countByHotelId(String hotelId);
+
+    List<RestaurantTable> findByHotelIdAndUpdatedAtAfter(
+            String hotelId, LocalDateTime updatedAt);
 }
