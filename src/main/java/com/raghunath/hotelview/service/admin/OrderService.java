@@ -26,8 +26,14 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.time.ZonedDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 
 @Slf4j
 @Service
@@ -347,37 +353,89 @@ public class OrderService {
 
     @Transactional
     public void softDeleteOrders(String hotelId, List<String> orderIds) {
-        // 1. Check in Completed Orders
+        // 1. Fetch orders from both sources
         List<CompletedOrder> completedOrders = completeOrderRepository.findAllById(orderIds)
-                .stream()
-                .filter(o -> o.getHotelId().equals(hotelId))
-                .toList();
+                .stream().filter(o -> o.getHotelId().equals(hotelId)).toList();
 
-        // 2. Check in Kitchen Orders (This is where your order ...8a60 currently is!)
         List<KitchenOrder> kitchenOrders = kitchenOrderRepository.findAllById(orderIds)
-                .stream()
-                .filter(o -> o.getHotelId().equals(hotelId))
-                .toList();
+                .stream().filter(o -> o.getHotelId().equals(hotelId)).toList();
 
         if (completedOrders.isEmpty() && kitchenOrders.isEmpty()) {
             throw new RuntimeException("Unauthorized or Orders not found");
         }
 
-        // 3. Move Completed orders to trash
-        if (!completedOrders.isEmpty()) {
-            mongoTemplate.insert(completedOrders, "deleted_orders");
-            completeOrderRepository.deleteAll(completedOrders);
+        // 🚀 2. Calculate deduction and identify tables involved
+        double totalDeduction = 0.0;
+        Set<Integer> tablesToUpdate = new HashSet<>();
+
+        // FIX: Get tableNumber from the nested list in CompletedOrder
+        for (CompletedOrder o : completedOrders) {
+            totalDeduction += (o.getTotalPayable() != null) ? o.getTotalPayable() : 0.0;
+
+            if (o.getAllOrders() != null && !o.getAllOrders().isEmpty()) {
+                Integer tNum = o.getAllOrders().get(0).getTableNumber();
+                if (tNum != null) tablesToUpdate.add(tNum);
+            }
         }
 
-        // 4. Move Kitchen orders to trash
-        if (!kitchenOrders.isEmpty()) {
-            mongoTemplate.insert(kitchenOrders, "deleted_orders");
-            kitchenOrderRepository.deleteAll(kitchenOrders);
-            // Important: If we delete a kitchen order, we must update the table status
-            versionService.bumpTables(hotelId);
+        // Process Kitchen Orders normally
+        for (KitchenOrder o : kitchenOrders) {
+            totalDeduction += (o.getTotalAmount() != null) ? o.getTotalAmount() : 0.0;
+            if (o.getTableNumber() != null) {
+                tablesToUpdate.add(o.getTableNumber());
+            }
         }
 
+        // 3. Update the RestaurantTable currentBill
+        if (!tablesToUpdate.isEmpty()) {
+            for (Integer tableNum : tablesToUpdate) {
+                double finalTotalDeduction = totalDeduction;
+                tableRepository.findByHotelIdAndTableNumber(hotelId, tableNum).ifPresent(table -> {
+                    double current = (table.getCurrentBill() != null) ? table.getCurrentBill() : 0.0;
+                    double newBill = Math.max(0, current - finalTotalDeduction);
+
+                    table.setCurrentBill(newBill);
+
+                    // If bill becomes 0, set status to AVAILABLE
+                    if (newBill <= 0) {
+                        table.setStatus("AVAILABLE");
+                    }
+
+                    tableRepository.save(table);
+                });
+            }
+        }
+
+        // 4. Move to Trash with deletedAt IST
+        ZonedDateTime nowIST = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
+        String deletedAt = nowIST.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        List<org.bson.Document> trashDocs = new ArrayList<>();
+
+        // Convert and add deletedAt to documents
+        completedOrders.forEach(order -> {
+            org.bson.Document doc = new org.bson.Document();
+            mongoTemplate.getConverter().write(order, doc);
+            doc.put("deletedAt", deletedAt);
+            trashDocs.add(doc);
+        });
+
+        kitchenOrders.forEach(order -> {
+            org.bson.Document doc = new org.bson.Document();
+            mongoTemplate.getConverter().write(order, doc);
+            doc.put("deletedAt", deletedAt);
+            trashDocs.add(doc);
+        });
+
+        // 5. Final DB Operations
+        if (!trashDocs.isEmpty()) {
+            mongoTemplate.insert(trashDocs, "deleted_orders");
+            if (!completedOrders.isEmpty()) completeOrderRepository.deleteAll(completedOrders);
+            if (!kitchenOrders.isEmpty()) kitchenOrderRepository.deleteAll(kitchenOrders);
+        }
+
+        // 6. Sync Versions
         versionService.bumpSales(hotelId);
+        versionService.bumpTables(hotelId);
     }
 
     public List<org.bson.Document> getDeletedOrders(String hotelId) {
