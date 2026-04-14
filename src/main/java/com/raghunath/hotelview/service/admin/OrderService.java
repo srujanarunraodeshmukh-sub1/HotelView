@@ -1,10 +1,7 @@
 package com.raghunath.hotelview.service.admin;
 
 import com.raghunath.hotelview.dto.admin.*;
-import com.raghunath.hotelview.entity.Admin;
-import com.raghunath.hotelview.entity.CompletedOrder;
-import com.raghunath.hotelview.entity.KitchenOrder;
-import com.raghunath.hotelview.entity.OrderDraft;
+import com.raghunath.hotelview.entity.*;
 import com.raghunath.hotelview.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -349,6 +346,50 @@ public class OrderService {
             t.setUpdatedAt(LocalDateTime.now());
             tableRepository.save(t);
         });
+    }
+
+    @Transactional
+    public void transferTableOrders(String hotelId, int fromTable, int toTable) {
+        // 1. Validate that the destination table exists
+        RestaurantTable targetTable = tableRepository.findByHotelIdAndTableNumber(hotelId, toTable)
+                .orElseThrow(() -> new RuntimeException("Target table " + toTable + " does not exist"));
+
+        // 2. Fetch all active kitchen orders for the source table
+        List<KitchenOrder> activeOrders = kitchenOrderRepository.findByHotelIdAndTableNumber(hotelId, fromTable);
+
+        if (activeOrders.isEmpty()) {
+            throw new RuntimeException("No active orders found on Table " + fromTable);
+        }
+
+        // 3. Calculate the total amount being moved
+        double transferAmount = activeOrders.stream()
+                .mapToDouble(o -> o.getTotalAmount() != null ? o.getTotalAmount() : 0.0)
+                .sum();
+
+        // 4. Update the table number in each kitchen order
+        activeOrders.forEach(order -> {
+            order.setTableNumber(toTable);
+            // Optional: you can also update the 'updatedAt' timestamp here
+        });
+        kitchenOrderRepository.saveAll(activeOrders);
+
+        // 5. Update Source Table: Deduct bill and set to AVAILABLE if empty
+        tableRepository.findByHotelIdAndTableNumber(hotelId, fromTable).ifPresent(source -> {
+            double current = source.getCurrentBill() != null ? source.getCurrentBill() : 0.0;
+            double newBill = Math.max(0, current - transferAmount);
+            source.setCurrentBill(newBill);
+            if (newBill <= 0) source.setStatus("AVAILABLE");
+            tableRepository.save(source);
+        });
+
+        // 6. Update Target Table: Add bill and set to OCCUPIED/PENDING
+        double targetCurrent = targetTable.getCurrentBill() != null ? targetTable.getCurrentBill() : 0.0;
+        targetTable.setCurrentBill(targetCurrent + transferAmount);
+        targetTable.setStatus("PENDING"); // Or "OCCUPIED" based on your logic
+        tableRepository.save(targetTable);
+
+        // 7. Sync Versions so Waiter Apps update immediately
+        versionService.bumpTables(hotelId);
     }
 
     @Transactional

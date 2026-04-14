@@ -1,6 +1,7 @@
 package com.raghunath.hotelview.controller.admin;
 
 import com.raghunath.hotelview.entity.RestaurantTable;
+import com.raghunath.hotelview.service.admin.OrderService;
 import com.raghunath.hotelview.service.admin.TableService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,7 @@ import java.util.List;
 public class TableController {
 
     private final TableService tableService;
+    private final OrderService orderService;
 
     // 1. Get all tables for the logged-in Hotel
     @GetMapping
@@ -28,6 +30,15 @@ public class TableController {
     public ResponseEntity<RestaurantTable> addTable(@RequestBody RestaurantTable table) {
         String hotelId = SecurityContextHolder.getContext().getAuthentication().getName();
         return ResponseEntity.ok(tableService.saveTable(hotelId, table));
+    }
+
+    @PutMapping("/transfer/{fromTable}/{toTable}")
+    public ResponseEntity<String> transferTableOrders(
+            @PathVariable int fromTable,
+            @PathVariable int toTable) {
+        String hotelId = SecurityContextHolder.getContext().getAuthentication().getName();
+        orderService.transferTableOrders(hotelId, fromTable, toTable);
+        return ResponseEntity.ok("Orders transferred to Table " + toTable + " successfully");
     }
 
     @PutMapping("/{id}")

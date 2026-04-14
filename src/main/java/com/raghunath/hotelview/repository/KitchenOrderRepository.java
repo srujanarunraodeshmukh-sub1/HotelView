@@ -24,4 +24,6 @@ public interface KitchenOrderRepository extends MongoRepository<KitchenOrder, St
 
     List<KitchenOrder> findByHotelIdAndTableNumberAndUpdatedAtAfterOrderByCreatedAtDesc(
             String hotelId, Integer tableNumber, LocalDateTime updatedAt);
+
+    List<KitchenOrder> findByHotelIdAndTableNumber(String hotelId, int fromTable);
 }
