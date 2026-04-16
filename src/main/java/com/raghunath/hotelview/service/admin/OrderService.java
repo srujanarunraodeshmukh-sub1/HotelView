@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,14 +24,11 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.time.ZonedDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 
 @Slf4j
 @Service
@@ -479,6 +477,121 @@ public class OrderService {
         versionService.bumpTables(hotelId);
     }
 
+    @Transactional
+    public void confirmOrderEdit(String hotelId, String orderId, List<OrderItem> newItems) {
+        // 1. Fetch live order
+        KitchenOrder order = kitchenOrderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+        List<OrderEdit> editLogs = new ArrayList<>();
+        String timeIST = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"))
+                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+
+        // 🚀 STEP 2: Handle Reductions & Deletions (Match by Name)
+        for (OrderItem oldItem : order.getItems()) {
+            // Find matching item in the new list by Name
+            OrderItem newItem = newItems.stream()
+                    .filter(ni -> ni.getItemName().equalsIgnoreCase(oldItem.getItemName()))
+                    .findFirst()
+                    .orElse(null);
+
+            int newQty = (newItem != null) ? newItem.getQuantity() : 0;
+            int delta = newQty - oldItem.getQuantity();
+
+            if (delta != 0) {
+                editLogs.add(OrderEdit.builder()
+                        .orderId(orderId)
+                        .hotelId(hotelId)
+                        .editedBy(userName)
+                        .itemName(oldItem.getItemName())
+                        .previousQty(oldItem.getQuantity())
+                        .newQty(newQty)
+                        .delta(delta)
+                        .timestamp(timeIST)
+                        .build());
+            }
+        }
+
+        // 🚀 STEP 3: Handle Brand New Items (Items not in the old list)
+        for (OrderItem newItem : newItems) {
+            boolean exists = order.getItems().stream()
+                    .anyMatch(old -> old.getItemName().equalsIgnoreCase(newItem.getItemName()));
+
+            if (!exists) {
+                editLogs.add(OrderEdit.builder()
+                        .orderId(orderId)
+                        .hotelId(hotelId)
+                        .editedBy(userName)
+                        .itemName(newItem.getItemName())
+                        .previousQty(0)
+                        .newQty(newItem.getQuantity())
+                        .delta(newItem.getQuantity())
+                        .timestamp(timeIST)
+                        .build());
+            }
+        }
+
+        // 4. Update the Database
+        double oldTotal = order.getTotalAmount();
+        double newTotal = newItems.stream().mapToDouble(i -> i.getPrice() * i.getQuantity()).sum();
+
+        order.setItems(newItems);
+        order.setTotalAmount(newTotal);
+        kitchenOrderRepository.save(order);
+
+        // 5. Update Table Bill Difference
+        updateTableBill(hotelId, order.getTableNumber(), (newTotal - oldTotal), false);
+
+        // 6. Save Audit Logs to the separate collection
+        if (!editLogs.isEmpty()) {
+            mongoTemplate.insert(editLogs, "order_edits");
+        }
+
+        versionService.bumpTables(hotelId);
+    }
+
+    public Map<String, Object> getAggregatedTableSummary(String hotelId, String completedOrderId) {
+        // 1. Fetch the main Completed Order document (The "Parent")
+        CompletedOrder completedBill = mongoTemplate.findById(completedOrderId, CompletedOrder.class);
+
+        if (completedBill == null) {
+            throw new RuntimeException("Completed Order record not found");
+        }
+
+        // 2. Prepare a LinkedHashMap to maintain the order of arrival (Serial View)
+        Map<String, Object> finalTableHistory = new LinkedHashMap<>();
+
+        // 3. Loop through every KitchenOrder that was part of this bill
+        for (KitchenOrder subOrder : completedBill.getAllOrders()) {
+            String subOrderId = subOrder.getId();
+
+            // Query audit logs for THIS specific sub-order
+            Query query = new Query(Criteria.where("orderId").is(subOrderId).and("hotelId").is(hotelId));
+            query.with(Sort.by(Sort.Direction.ASC, "timestamp"));
+
+            List<OrderEdit> editHistory = mongoTemplate.find(query, OrderEdit.class, "order_edits");
+
+            // Prepare the data packet for this specific order
+            Map<String, Object> orderEntry = new LinkedHashMap<>();
+            orderEntry.put("orderType", subOrder.getOrderType());
+            orderEntry.put("finalItems", subOrder.getItems()); // Items as they appeared at checkout
+            orderEntry.put("totalAmount", subOrder.getTotalAmount());
+
+            // Logical check for "No Edits"
+            if (editHistory.isEmpty()) {
+                orderEntry.put("editSummary", "No order edit summary available");
+            } else {
+                orderEntry.put("editSummary", editHistory);
+            }
+
+            // Add to the main map using the Order ID as the key
+            finalTableHistory.put("Order_" + subOrderId, orderEntry);
+        }
+
+        return finalTableHistory;
+    }
+
     public List<org.bson.Document> getDeletedOrders(String hotelId) {
         // 1. Query for the specific hotel
         Query query = new Query(Criteria.where("hotelId").is(hotelId));
@@ -586,14 +699,23 @@ public class OrderService {
         tableRepository.findByHotelIdAndTableNumber(hotelId, tableNumber).ifPresent(table -> {
             if (isReset) {
                 table.setCurrentBill(0.0);
+                table.setStatus("INACTIVE"); // 👈 Your Inactive Status
             } else {
-                // Logic: Existing Bill + New Order Total
                 Double existingBill = table.getCurrentBill() != null ? table.getCurrentBill() : 0.0;
-                table.setCurrentBill(existingBill + amountToAdd);
+                double newTotal = Math.max(0.0, existingBill + (amountToAdd != null ? amountToAdd : 0.0));
+                table.setCurrentBill(newTotal);
+
+                // Logic for your 3 specific statuses
+                if (newTotal <= 0) {
+                    table.setStatus("INACTIVE");
+                } else {
+                    table.setStatus("PENDING"); // 👈 Bill is updated, waiting for next action/payment
+                }
             }
             table.setUpdatedAt(LocalDateTime.now());
             tableRepository.save(table);
-            log.info("BILL_SYNC: Hotel {} Table {} updated to {}", hotelId, tableNumber, table.getCurrentBill());
+            log.info("BILL_SYNC: Hotel {} Table {} updated to {}. Status: {}",
+                    hotelId, tableNumber, table.getCurrentBill(), table.getStatus());
         });
     }
 

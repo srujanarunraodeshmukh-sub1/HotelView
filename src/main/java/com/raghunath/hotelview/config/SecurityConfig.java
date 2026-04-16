@@ -82,10 +82,12 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/tables/**").hasRole("ADMIN")
 
                         // 4. KITCHEN OPERATIONS (Role-Based Methods)
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/orders/kitchen/*/confirm-edit").hasAnyRole("ADMIN", "WAITER")
                         .requestMatchers(HttpMethod.GET, "/api/v1/orders/kitchen/**").hasAnyRole("WAITER", "CHEF", "ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/orders/kitchen/**").hasAnyRole("CHEF", "ADMIN")
 
                         // 5. ORDER & SALES OPERATIONS (Admin + Waiter)
+                        .requestMatchers("/api/v1/orders/summary/completed/**").hasRole("ADMIN")
                         .requestMatchers(
                                 "/api/v1/orders/draft/**",
                                 "/api/v1/orders/confirm/**",

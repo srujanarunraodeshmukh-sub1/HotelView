@@ -4,18 +4,26 @@ import com.raghunath.hotelview.dto.admin.*;
 import com.raghunath.hotelview.entity.CompletedOrder;
 import com.raghunath.hotelview.entity.KitchenOrder;
 import com.raghunath.hotelview.entity.OrderDraft;
+import com.raghunath.hotelview.entity.OrderEdit;
 import com.raghunath.hotelview.repository.KitchenOrderRepository;
 import com.raghunath.hotelview.service.admin.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.annotation.Order;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/orders")
@@ -23,6 +31,7 @@ import java.util.List;
 public class OrderController {
     private final OrderService orderService;
     private final KitchenOrderRepository kitchenOrderRepository;
+    private final MongoTemplate mongoTemplate;
 
     private String getAuthenticatedUserId() {
         return SecurityContextHolder.getContext().getAuthentication().getName();
@@ -125,6 +134,31 @@ public class OrderController {
     public ResponseEntity<DashboardStatsDTO> getDashboardStats() {
         String hotelId = getAuthenticatedUserId();
         return ResponseEntity.ok(orderService.getDashboardStats(hotelId));
+    }
+
+    // API 1: Confirm the Edit
+    @PutMapping("/kitchen/{orderId}/confirm-edit")
+    public ResponseEntity<String> confirmEdit(
+            @PathVariable String orderId,
+            @RequestBody List<OrderItem> newItems) {
+        String hotelId = SecurityContextHolder.getContext().getAuthentication().getName();
+        orderService.confirmOrderEdit(hotelId, orderId, newItems);
+        return ResponseEntity.ok("Order updated and logs saved successfully");
+    }
+
+    // API 2: Get History Summary
+    // API 2: Get History Summary
+    // API: Get Full Table History via Completed Order ID
+    @GetMapping("/summary/completed/{completedOrderId}")
+    public ResponseEntity<Map<String, Object>> getFullTableSummary(@PathVariable String completedOrderId) {
+        String hotelId = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        try {
+            Map<String, Object> aggregatedSummary = orderService.getAggregatedTableSummary(hotelId, completedOrderId);
+            return ResponseEntity.ok(aggregatedSummary);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     // 9. FETCH COMPLETED ORDERS (Ready to be served)
