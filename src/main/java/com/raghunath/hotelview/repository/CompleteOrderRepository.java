@@ -62,4 +62,6 @@ public interface CompleteOrderRepository extends MongoRepository<CompletedOrder,
             String hotelId, List<String> orderTypes, String checkoutDate);
 
     long countByHotelId(String hotelId);
+
+    Long countByHotelIdAndOrderTypeInAndCheckoutDate(String hotelId, List<String> deliveryTypes, String todayDate);
 }

@@ -659,8 +659,9 @@ public class OrderService {
         Long activeTablesCount = tableRepository.countByHotelIdAndStatusIn(hotelId, activeStatuses);
 
         // FIX 2: Home Delivery Count (Pulling from COMPLETED orders for today)
-        Long homeDeliveriesToday = completeOrderRepository.countByHotelIdAndOrderTypeAndCheckoutDate(
-                hotelId, "HOME_DELIVERY", todayDate);
+        List<String> deliveryTypes = List.of("HOME", "PARCEL");
+        Long HomeAndParcelOrdersToday = completeOrderRepository.countByHotelIdAndOrderTypeInAndCheckoutDate(
+                hotelId, deliveryTypes, todayDate);
 
         // Employee Stats: Count all active employees
         Long employeeCount = employeeRepository.countByHotelIdAndIsActive(hotelId, true);
@@ -685,7 +686,7 @@ public class OrderService {
         // 4. Build and return the consolidated DTO
         return DashboardStatsDTO.builder()
                 .activeTablesCount(activeTablesCount) // Now shows sum of Active/Pending/Accepted
-                .pendingHomeDeliveriesCount(homeDeliveriesToday) // Now shows Total Completed Deliveries Today
+                .pendingHomeDeliveriesCount(HomeAndParcelOrdersToday) // Now shows Total Completed Deliveries Today
                 .completedOrdersTodayCount(completedTodayCount)
                 .employeeOnlineCount(employeeCount)
                 .totalItemsCount(totalItems)
