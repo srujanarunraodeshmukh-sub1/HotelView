@@ -76,9 +76,13 @@ public class SecurityConfig {
                         ).hasRole("ADMIN")
 
                         // 3. TABLE OPERATIONS (Ordered by Specificity)
-                        // Specific: Transfer (Admin + Waiter)
+                        // ✅ 1. Allow Waiters and Admins to VIEW tables (Your "getMyTables" API)
+                        .requestMatchers(HttpMethod.GET, "/api/v1/tables").hasAnyRole("ADMIN", "WAITER")
+
+                        // ✅ 2. Allow Waiters and Admins to TRANSFER orders
                         .requestMatchers("/api/v1/tables/transfer/**").hasAnyRole("ADMIN", "WAITER")
-                        // General: CRUD (Admin Only)
+
+                        // ❌ 3. Restrict everything else (Add, Update, Delete) to ADMIN ONLY
                         .requestMatchers("/api/v1/tables/**").hasRole("ADMIN")
 
                         // 4. KITCHEN OPERATIONS (Role-Based Methods)
