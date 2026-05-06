@@ -40,9 +40,9 @@ public class Admin {
 
     private int maxLogins = 1;
 
-    private LocalDateTime subscriptionStart;
+    private String planType;
 
-    // Add this field to your Admin.java entity
+    private LocalDateTime subscriptionStart;
     private LocalDateTime subscriptionExpiry;
 
     private String restaurantName;

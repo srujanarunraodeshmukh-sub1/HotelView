@@ -1,9 +1,6 @@
 package com.raghunath.hotelview.controller.admin;
 
-import com.raghunath.hotelview.dto.admin.AdminProfileDTO;
-import com.raghunath.hotelview.dto.admin.LoginRequest;
-import com.raghunath.hotelview.dto.admin.LoginResponse;
-import com.raghunath.hotelview.dto.admin.RegisterRequest;
+import com.raghunath.hotelview.dto.admin.*;
 import com.raghunath.hotelview.service.admin.AdminAuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +40,18 @@ public class AuthController {
     public ResponseEntity<String> updateProfile(@RequestBody AdminProfileDTO updates) {
         String hotelId = SecurityContextHolder.getContext().getAuthentication().getName();
         return ResponseEntity.ok(adminAuthService.updateProfile(hotelId, updates));
+    }
+
+    @GetMapping("/business")
+    public ResponseEntity<BusinessDetailsDTO> getBusinessDetails() {
+        String hotelId = SecurityContextHolder.getContext().getAuthentication().getName();
+        return ResponseEntity.ok(adminAuthService.getBusinessDetails(hotelId));
+    }
+
+    @PutMapping("/business")
+    public ResponseEntity<BusinessDetailsDTO> updateBusinessDetails(@RequestBody BusinessDetailsDTO updates) {
+        String hotelId = SecurityContextHolder.getContext().getAuthentication().getName();
+        return ResponseEntity.ok(adminAuthService.updateBusinessDetails(hotelId, updates));
     }
 
     @PostMapping("/refresh-token")

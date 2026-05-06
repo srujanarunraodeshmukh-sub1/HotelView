@@ -81,6 +81,7 @@ public class AdminAuthService {
                 .isActive(true)
                 .subscriptionStart(now) // NEW FIELD ADDED HERE
                 .subscriptionExpiry(subscriptionExpiry)
+                .planType("Free Tier")
                 .maxLogins(1)
                 .build();
 
@@ -150,6 +151,43 @@ public class AdminAuthService {
 
         adminRepository.save(admin);
         return "Profile updated successfully";
+    }
+
+    // Inside AdminService.java
+
+    public BusinessDetailsDTO getBusinessDetails(String hotelId) {
+        Admin admin = adminRepository.findByHotelId(hotelId)
+                .orElseThrow(() -> new RuntimeException("Admin not found with ID: " + hotelId));
+
+        return mapToDTO(admin);
+    }
+
+    public BusinessDetailsDTO updateBusinessDetails(String hotelId, BusinessDetailsDTO updates) {
+        Admin admin = adminRepository.findByHotelId(hotelId)
+                .orElseThrow(() -> new RuntimeException("Admin not found with ID: " + hotelId));
+
+        // Update ONLY the specified business fields
+        admin.setRestaurantName(updates.getRestaurantName());
+        admin.setRestaurantAddress(updates.getRestaurantAddress());
+        admin.setRestaurantContact(updates.getRestaurantContact());
+        admin.setRestaurantLogo(updates.getRestaurantLogo());
+        admin.setRestaurantUpi(updates.getRestaurantUpi());
+
+        // planType is NOT updated here
+
+        Admin savedAdmin = adminRepository.save(admin);
+        return mapToDTO(savedAdmin);
+    }
+
+    private BusinessDetailsDTO mapToDTO(Admin admin) {
+        return BusinessDetailsDTO.builder()
+                .restaurantName(admin.getRestaurantName())
+                .restaurantAddress(admin.getRestaurantAddress())
+                .restaurantContact(admin.getRestaurantContact())
+                .restaurantLogo(admin.getRestaurantLogo())
+                .restaurantUpi(admin.getRestaurantUpi())
+                .planType(admin.getPlanType())
+                .build();
     }
 
     public Map<String, Object> refreshAdminToken(String oldRefreshToken) {
