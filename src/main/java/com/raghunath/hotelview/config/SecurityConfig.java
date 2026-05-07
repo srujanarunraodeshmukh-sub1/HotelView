@@ -67,7 +67,9 @@ public class SecurityConfig {
                                 "/api/v1/sync/test-bump",
                                 "/api/v1/admin/refresh-token",
                                 "/api/v1/employees/refresh-token",
-                                "/api/v1/info/**"
+                                "/api/v1/info/**",
+                                "/api/v1/orders/webhook",
+                                "/ws-node/**"
                         ).permitAll()
 
                         // 2. STAFF & USER MANAGEMENT (Admin Only)
@@ -76,7 +78,8 @@ public class SecurityConfig {
                                 "/api/v1/admin/profile",
                                 "/api/v1/admin/business",
                                 "/api/v1/employees/list",
-                                "/api/v1/employees/**"
+                                "/api/v1/employees/**",
+                                "api/v1/admin/integrations"
                         ).hasRole("ADMIN")
 
                         // 3. TABLE OPERATIONS (Ordered by Specificity)
@@ -100,6 +103,7 @@ public class SecurityConfig {
                                 "/api/v1/orders/draft/**",
                                 "/api/v1/orders/confirm/**",
                                 "/api/v1/orders/table/**",
+                                "/api/v1/orders/external/accept/",
                                 "/api/v1/orders/checkout",
                                 "/api/v1/orders/completed/transfer/**",
                                 "/api/v1/orders/completed/delivery/today",

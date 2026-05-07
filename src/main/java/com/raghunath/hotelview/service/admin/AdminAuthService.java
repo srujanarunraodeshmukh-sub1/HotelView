@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -215,6 +216,26 @@ public class AdminAuthService {
                 "refreshToken", newRefresh,
                 "isPlanExpired", isExpired
         );
+    }
+
+    // Inside AdminAuthService.java
+    public void updatePlatformId(String hotelId, PlatformConfigRequest request) {
+        Admin admin = adminRepository.findByHotelId(hotelId)
+                .orElseThrow(() -> new RuntimeException("Admin not found"));
+
+        // 1. Initialize maps if they are null (safety check)
+        if (admin.getPlatformIds() == null) admin.setPlatformIds(new HashMap<>());
+        if (admin.getIntegrationStatus() == null) admin.setIntegrationStatus(new HashMap<>());
+
+        String platform = request.getPlatformName().toUpperCase();
+
+        // 2. Save the Merchant ID
+        admin.getPlatformIds().put(platform, request.getMerchantId());
+
+        // 3. Mark as Active
+        admin.getIntegrationStatus().put(platform, true);
+
+        adminRepository.save(admin);
     }
 
     @Transactional

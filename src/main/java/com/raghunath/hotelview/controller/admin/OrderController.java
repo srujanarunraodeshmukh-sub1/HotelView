@@ -83,6 +83,27 @@ public class OrderController {
         return ResponseEntity.ok("Order sent to kitchen. ID: " + orderId);
     }
 
+    // 1. PUBLIC WEBHOOK: Receives orders from Zomato/Swiggy
+    // This is called automatically by the external platform
+    @PostMapping("/webhook")
+    public ResponseEntity<String> receiveExternalOrder(@RequestBody OrderWebhookDTO externalOrder) {
+        orderService.processExternalOrder(externalOrder);
+        return ResponseEntity.ok("Order Received Successfully");
+    }
+
+    // 2. PRIVATE API: Called by your Admin/Waiter from the Dashboard
+    // This moves the order from 'ExternalOrder' to 'KitchenOrder'
+    @PutMapping("/external/accept/{orderId}")
+    public ResponseEntity<String> acceptExternalOrder(@PathVariable String orderId) {
+        // Extracts the ID from the JWT token
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        // Calls the second service method to move data to the kitchen
+        String kitchenOrderId = orderService.approveExternalOrder(orderId, userId);
+
+        return ResponseEntity.ok("External order approved. Kitchen Order ID: " + kitchenOrderId);
+    }
+
     // 4. FETCH SPECIFIC TABLE ORDERS (Latest First)
     @GetMapping("/table/{tableNumber}")
     public ResponseEntity<List<KitchenOrder>> getTableOrders(@PathVariable int tableNumber) {

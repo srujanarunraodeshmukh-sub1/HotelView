@@ -6,6 +6,8 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 @Data
 @Getter
@@ -51,4 +53,9 @@ public class Admin {
     private String restaurantLogo;
     private String restaurantUpi;
 
+    // STEP 3: Stores the actual IDs (e.g., {"ZOMATO": "ZOM123"})
+    private Map<String, String> platformIds = new HashMap<>();
+
+    // STEP 5: Stores if it's currently active (e.g., {"ZOMATO": true})
+    private Map<String, Boolean> integrationStatus = new HashMap<>();
 }
