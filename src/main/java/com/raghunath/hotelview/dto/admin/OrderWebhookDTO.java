@@ -8,7 +8,7 @@ import java.util.List;
 @AllArgsConstructor
 public class OrderWebhookDTO {
     private String hotelId;
-    private String MerchantId;
+    private String merchantId;
     private String platformName;
     private String externalOrderId;
     private String customerName;

@@ -171,11 +171,12 @@ public class OrderService {
 
         // Now 'admin' is resolved!
         // We check if the Merchant ID sent by Zomato matches what we stored earlier
+        // Change this line:
         String incomingMerchantId = dto.getMerchantId();
         String storedMerchantId = admin.getPlatformIds().get(dto.getPlatformName().toUpperCase());
 
-        if (storedMerchantId == null || !storedMerchantId.equals(dto.getExternalOrderId())) {
-            // This protects Krishna from fake orders
+         // FIX: Compare storedMerchantId with incomingMerchantId, NOT externalOrderId
+        if (storedMerchantId == null || !storedMerchantId.equals(incomingMerchantId)) {
             throw new RuntimeException("Unauthorized: Merchant ID mismatch");
         }
 
