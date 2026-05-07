@@ -171,6 +171,7 @@ public class OrderService {
 
         // Now 'admin' is resolved!
         // We check if the Merchant ID sent by Zomato matches what we stored earlier
+        String incomingMerchantId = dto.getMerchantId();
         String storedMerchantId = admin.getPlatformIds().get(dto.getPlatformName().toUpperCase());
 
         if (storedMerchantId == null || !storedMerchantId.equals(dto.getExternalOrderId())) {
