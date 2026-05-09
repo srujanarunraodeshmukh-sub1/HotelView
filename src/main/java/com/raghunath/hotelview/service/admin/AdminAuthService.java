@@ -3,8 +3,10 @@ package com.raghunath.hotelview.service.admin;
 import com.raghunath.hotelview.dto.admin.*;
 import com.raghunath.hotelview.entity.Admin;
 import com.raghunath.hotelview.entity.AdminRefreshToken;
+import com.raghunath.hotelview.entity.Plan;
 import com.raghunath.hotelview.repository.AdminRefreshTokenRepository;
 import com.raghunath.hotelview.repository.AdminRepository;
+import com.raghunath.hotelview.repository.PlanRepository;
 import com.raghunath.hotelview.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -15,6 +17,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +30,7 @@ public class AdminAuthService {
     private final AdminRefreshTokenRepository adminRefreshTokenRepository;
     private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final PlanRepository planRepository;
 
     // Helper to get current time in IST
     private LocalDateTime getNowIST() {
@@ -236,6 +240,21 @@ public class AdminAuthService {
         admin.getIntegrationStatus().put(platform, true);
 
         adminRepository.save(admin);
+    }
+
+    public Map<String, Object> getSubscriptionDashboard(String hotelId) {
+        // 1. Get Admin to find their current planType
+        Admin admin = adminRepository.findByHotelId(hotelId)
+                .orElseThrow(() -> new RuntimeException("Admin not found"));
+
+        // 2. Fetch all plan details from the 'plans' collection
+        List<Plan> allPlans = planRepository.findAll();
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("currentPlan", admin.getPlanType());
+        response.put("availableOptions", allPlans);
+
+        return response;
     }
 
     @Transactional

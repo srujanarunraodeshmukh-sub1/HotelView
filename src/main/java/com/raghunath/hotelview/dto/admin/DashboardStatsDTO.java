@@ -6,11 +6,12 @@ import lombok.Data;
 @Builder
 public class DashboardStatsDTO {
     // Green Dot Values
+    private String restaurantName;
+    private String planType;
     private Long activeTablesCount;         // 12 ACTIVE
-    private Long pendingHomeDeliveriesCount;  // 5 PENDING
+    private Long HomeDeliveriesCount;  // 5 PENDING
     private Long completedOrdersTodayCount;  // 128 TODAY
     private Long employeeOnlineCount;        // 14 ONLINE
     private Long totalItemsCount;            // 45 TOTAL
-    private String restaurantName;
     private Double todaySalesRupees;         // 15300.0 (till now)
 }

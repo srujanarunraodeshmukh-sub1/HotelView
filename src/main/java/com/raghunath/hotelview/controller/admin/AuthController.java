@@ -11,7 +11,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -25,9 +27,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public LoginResponse login(@Valid @RequestBody LoginRequest request) {
-
         return adminAuthService.login(request);
-
     }
 
     @PostMapping("/register")
@@ -67,7 +67,6 @@ public class AuthController {
             return ResponseEntity.badRequest().body(Map.of("error", "Refresh token is required"));
         }
 
-        // Change the variable type from Map<String, String> to Map<String, Object> 👇
         Map<String, Object> tokens = adminAuthService.refreshAdminToken(oldRefreshToken);
 
         return ResponseEntity.ok(tokens);
@@ -79,7 +78,6 @@ public class AuthController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String hotelId = authentication.getName(); // This usually holds your hotelId/username
 
-        // Now it is initialized, the error will go away
         adminAuthService.updatePlatformId(hotelId, request);
 
         return ResponseEntity.ok(request.getPlatformName() + " connected successfully!");
@@ -105,10 +103,15 @@ public class AuthController {
         config.put("platform", platformName.toUpperCase());
 
         // 3. (Optional) Provide a Secret Token for security
-        // This helps verify that the order actually came from Zomato
         config.put("webhookSecret", "hv_secret_" + hotelId.hashCode());
 
         return ResponseEntity.ok(config);
+    }
+
+    @GetMapping("/plan/details")
+    public ResponseEntity<Map<String, Object>> getSubscriptionInfo() {
+        String hotelId = SecurityContextHolder.getContext().getAuthentication().getName();
+        return ResponseEntity.ok(adminAuthService.getSubscriptionDashboard(hotelId));
     }
 
     @PostMapping("/logout")

@@ -8,7 +8,7 @@ public class PasswordHashGenerator {
 
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
-        String rawPassword = "1234";
+        String rawPassword = "08091973";
 
         String hashedPassword = encoder.encode(rawPassword);
 

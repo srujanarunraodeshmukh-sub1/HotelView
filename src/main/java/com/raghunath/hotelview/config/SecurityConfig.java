@@ -79,6 +79,8 @@ public class SecurityConfig {
                                 "/api/v1/admin/business",
                                 "/api/v1/employees/list",
                                 "/api/v1/employees/**",
+                                "/api/v1/admin/myplan/details",
+                                "/api/v1/admin/plan/details",
                                 "api/v1/admin/integrations"
                         ).hasRole("ADMIN")
 

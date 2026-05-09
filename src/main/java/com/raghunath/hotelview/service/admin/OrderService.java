@@ -763,11 +763,12 @@ public class OrderService {
         ZonedDateTime nowIST = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
         String todayDate = nowIST.format(DateTimeFormatter.ISO_LOCAL_DATE);
 
-        // 2. Fetch Restaurant Name
-        // Replace 'hotelRepository' with the actual repository for your Hotel/Restaurant entity
-        String restaurantName = adminRepository.findByHotelId(hotelId)
-                .map(Admin::getRestaurantName)
-                .orElse("Unknown Restaurant");
+        // 2. Fetch Admin Details (Name & Plan Type)
+        Admin admin = adminRepository.findByHotelId(hotelId)
+                .orElseThrow(() -> new RuntimeException("Hotel Admin not found"));
+
+        String restaurantName = admin.getRestaurantName() != null ? admin.getRestaurantName() : "Unknown Restaurant";
+        String planType = admin.getPlanType() != null ? admin.getPlanType() : "BASIC"; // Default to BASIC if null
 
         // 3. Fetch Metrics
         List<String> activeStatuses = List.of("PENDING", "ACCEPTED", "ACTIVE");
@@ -794,11 +795,12 @@ public class OrderService {
         // 5. Build and return
         return DashboardStatsDTO.builder()
                 .activeTablesCount(activeTablesCount)
-                .pendingHomeDeliveriesCount(homeAndParcelOrdersToday)
+                .HomeDeliveriesCount(homeAndParcelOrdersToday)
                 .completedOrdersTodayCount(completedTodayCount)
                 .employeeOnlineCount(employeeCount)
                 .totalItemsCount(totalItems)
-                .restaurantName(restaurantName) // Set the fetched name here
+                .restaurantName(restaurantName)
+                .planType(planType)
                 .todaySalesRupees(todaySalesRupees)
                 .build();
     }
