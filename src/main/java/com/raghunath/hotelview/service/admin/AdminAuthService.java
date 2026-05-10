@@ -1,17 +1,12 @@
 package com.raghunath.hotelview.service.admin;
 
 import com.raghunath.hotelview.dto.admin.*;
-import com.raghunath.hotelview.entity.Admin;
-import com.raghunath.hotelview.entity.AdminRefreshToken;
-import com.raghunath.hotelview.entity.CustomerDetails;
-import com.raghunath.hotelview.entity.Plan;
-import com.raghunath.hotelview.repository.AdminRefreshTokenRepository;
-import com.raghunath.hotelview.repository.AdminRepository;
-import com.raghunath.hotelview.repository.CustomerDetailsRepository;
-import com.raghunath.hotelview.repository.PlanRepository;
+import com.raghunath.hotelview.entity.*;
+import com.raghunath.hotelview.repository.*;
 import com.raghunath.hotelview.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.bson.Document;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -19,6 +14,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.data.mongodb.core.FindAndModifyOptions;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -40,6 +40,10 @@ public class AdminAuthService {
     private final PlanRepository planRepository;
     private final HotelViewDetailsService hotelViewDetailsService;
     private final CustomerDetailsRepository customerDetailsRepository;
+    private final UserPaymentSubmissionRepository userPaymentSubmissionRepository;
+
+    @Autowired
+    private MongoTemplate mongoTemplate;
 
     // Helper to get current time in IST
     private LocalDateTime getNowIST() {
@@ -82,18 +86,21 @@ public class AdminAuthService {
         }
 
         // 2. Set Start and Expiry (IST)
-        LocalDateTime now = getNowIST(); // Capture current time
+        LocalDateTime now = getNowIST();
         LocalDateTime subscriptionExpiry = now.plusDays(7);
 
-        // 3. Create and Save New Admin
+        // 3. Generate Incremental Hotel ID using the sequence method
+        String incrementalHotelId = generateIncrementalHotelId();
+
+        // 4. Create and Save New Admin
         Admin newAdmin = Admin.builder()
                 .name(request.getName())
                 .mobile(request.getMobile())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .hotelId("HOTEL" + System.currentTimeMillis())
+                .hotelId(incrementalHotelId) // Now uses HOTEL00001, etc.
                 .isApproved(true)
                 .isActive(true)
-                .subscriptionStart(now) // NEW FIELD ADDED HERE
+                .subscriptionStart(now)
                 .subscriptionExpiry(subscriptionExpiry)
                 .planType("Free Tier")
                 .maxLogins(1)
@@ -101,8 +108,30 @@ public class AdminAuthService {
 
         Admin savedAdmin = adminRepository.save(newAdmin);
 
-        // Registering users always get 'false' because their plan just started
         return performLogin(savedAdmin, "Registration successful", false);
+    }
+
+    /**
+     * Atomic sequence generator for Hotel IDs
+     * Logic: Increments 'seq' in 'database_counters' collection
+     */
+    private String generateIncrementalHotelId() {
+        Query query = new Query(Criteria.where("_id").is("hotel_id_sequence"));
+        Update update = new Update().inc("seq", 1);
+
+        // upsert: true creates the document if it's the very first registration
+        // returnNew: true ensures we get the incremented value
+        DatabaseCounter counter = mongoTemplate.findAndModify(
+                query,
+                update,
+                FindAndModifyOptions.options().returnNew(true).upsert(true),
+                DatabaseCounter.class
+        );
+
+        long sequence = (counter != null) ? counter.getSeq() : 1;
+
+        // Formats as HOTEL00001 (5 digits)
+        return String.format("HOTEL%05d", sequence);
     }
 
     // Shared logic for Login and Register to generate tokens
@@ -191,6 +220,30 @@ public class AdminAuthService {
 
         Admin savedAdmin = adminRepository.save(admin);
         return mapToDTO(savedAdmin);
+    }
+
+    public String submitPaymentProof(String url, String name, String address, String hotelId) {
+
+        // 1. Capture IST Time
+        ZonedDateTime nowIST = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
+
+        // 2. Build the record
+        UserPaymentSubmission submission = UserPaymentSubmission.builder()
+                .hotelId(hotelId)
+                .name(name)
+                .address(address)
+                .screenshotUrl(url)
+                .submissionDate(nowIST.format(DateTimeFormatter.ISO_LOCAL_DATE))
+                .submissionTime(nowIST.format(DateTimeFormatter.ofPattern("HH:mm:ss")))
+                .createdAt(nowIST.toLocalDateTime())
+                .status("PENDING")
+                .build();
+
+        // 3. Save to MongoDB
+        userPaymentSubmissionRepository.save(submission);
+
+        // 4. Return the specific success message requested
+        return "congratulations you have successfully submitted your payment details we will shortly verify you details and upgrade you plan within few hours";
     }
 
     private BusinessDetailsDTO mapToDTO(Admin admin) {

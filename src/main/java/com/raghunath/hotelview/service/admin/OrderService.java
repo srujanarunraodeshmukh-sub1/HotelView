@@ -579,7 +579,7 @@ public class OrderService {
 
                     // If bill becomes 0, set status to AVAILABLE
                     if (newBill <= 0) {
-                        table.setStatus("AVAILABLE");
+                        table.setStatus("INACTIVE");
                     }
 
                     tableRepository.save(table);

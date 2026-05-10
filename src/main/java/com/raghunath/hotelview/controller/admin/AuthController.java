@@ -61,6 +61,26 @@ public class AuthController {
         return ResponseEntity.ok(adminAuthService.updateBusinessDetails(hotelId, updates));
     }
 
+    @PostMapping("/submit/paymentDetails")
+    public ResponseEntity<Map<String, String>> handlePaymentSubmission(
+            @RequestParam String url,
+            @RequestParam String name,
+            @RequestParam String address,
+            Authentication authentication) {
+
+        // 1. Extract hotelId from Token
+        String hotelId = authentication.getName();
+
+        // 2. Call Service logic
+        String message = adminAuthService.submitPaymentProof(url, name, address, hotelId);
+
+        // 3. Wrap in Map for JSON response
+        Map<String, String> response = new HashMap<>();
+        response.put("message", message);
+
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("/refresh-token")
     public ResponseEntity<Map<String, Object>> refresh(@RequestBody Map<String, String> request) {
         String oldRefreshToken = request.get("refreshToken");
@@ -116,7 +136,14 @@ public class AuthController {
         return ResponseEntity.ok(adminAuthService.getSubscriptionDashboard(hotelId));
     }
 
+    @GetMapping("/customer/details")
+    public ResponseEntity<Page<CustomerDetails>> getAllCustomers(
+            Authentication authentication,
+            @RequestParam(defaultValue = "0") int page) {
 
+        String hotelId = authentication.getName();
+        return ResponseEntity.ok(adminAuthService.getCustomersByHotel(hotelId, page));
+    }
 
     @PostMapping("/logout")
     public ResponseEntity<String> logout(@RequestBody Map<String, String> request) {
