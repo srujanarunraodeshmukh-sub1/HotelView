@@ -6,6 +6,8 @@ import com.raghunath.hotelview.entity.MenuItem;
 import com.raghunath.hotelview.service.admin.MenuItemService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -70,12 +72,14 @@ public class MenuItemController {
     }
 
     @PostMapping("/add")
+    @CacheEvict(value = "menuCache", allEntries = true)
     public ApiResponse addMenuItem(@RequestBody MenuItemRequest request){
         String message = menuItemService.addMenuItem(request, getHotelId());
         return new ApiResponse(message);
     }
 
     @GetMapping("/allmenuitem")
+    @Cacheable(value = "menuCache", key = "#root.target.getHotelId() + '-' + #page + '-' + #size")
     public Page<MenuItem> getAllMenuItems(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
@@ -88,6 +92,7 @@ public class MenuItemController {
     }
 
     @PutMapping("/{itemId}")
+    @CacheEvict(value = "menuCache", allEntries = true)
     public ResponseEntity<MenuItemSummaryDTO> updateMenuItem(
             @PathVariable String itemId,
             @Valid @RequestBody MenuItemUpdateDTO updateRequest) {
