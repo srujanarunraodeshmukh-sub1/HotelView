@@ -72,14 +72,12 @@ public class MenuItemController {
     }
 
     @PostMapping("/add")
-    @CacheEvict(value = "menuCache", allEntries = true)
     public ApiResponse addMenuItem(@RequestBody MenuItemRequest request){
         String message = menuItemService.addMenuItem(request, getHotelId());
         return new ApiResponse(message);
     }
 
     @GetMapping("/allmenuitem")
-    @Cacheable(value = "menuCache", key = "#root.target.getHotelId() + '-' + #page + '-' + #size")
     public Page<MenuItem> getAllMenuItems(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
@@ -92,7 +90,6 @@ public class MenuItemController {
     }
 
     @PutMapping("/{itemId}")
-    @CacheEvict(value = "menuCache", allEntries = true)
     public ResponseEntity<MenuItemSummaryDTO> updateMenuItem(
             @PathVariable String itemId,
             @Valid @RequestBody MenuItemUpdateDTO updateRequest) {
