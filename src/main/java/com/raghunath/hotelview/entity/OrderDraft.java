@@ -15,7 +15,7 @@ public class OrderDraft {
     @Id
     private String id;
     private String hotelId;
-    private int tableNumber;
+    private String tableName;
     private List<OrderItem> items;
     private Double totalAmount;
     @Indexed(name = "draft_expiry", expireAfter = "24h")

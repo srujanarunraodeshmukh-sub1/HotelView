@@ -42,7 +42,7 @@ public class KitchenOrderingService {
 
         // Syncing Table Status
         if ("TABLE".equalsIgnoreCase(order.getOrderType())
-                && order.getTableNumber() != null) {
+                && order.getTableName() != null) {
 
             String tableUIStatus = switch (newStatus.toUpperCase()) {
                 case "ACCEPTED", "PREPARING" -> "ACCEPTED";
@@ -51,14 +51,14 @@ public class KitchenOrderingService {
             };
 
             updateTableVisualStatus(order.getHotelId(),
-                    order.getTableNumber(), tableUIStatus);
+                    order.getTableName(), tableUIStatus);
         }
     }
 
-    private void updateTableVisualStatus(String hotelId, Integer tableNumber, String status) {
-        if (tableNumber == null) return; // Never update table UI for delivery
+    private void updateTableVisualStatus(String hotelId, String tableName, String status) {
+        if (tableName == null) return; // Never update table UI for delivery
 
-        tableRepository.findByHotelIdAndTableNumber(hotelId, tableNumber).ifPresent(t -> {
+        tableRepository.findByHotelIdAndTableName(hotelId, tableName).ifPresent(t -> {
             t.setStatus(status);
             t.setUpdatedAt(LocalDateTime.now());
             tableRepository.save(t);

@@ -83,6 +83,12 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/payment/status")
+    public ResponseEntity<?> getPaymentStatus(Authentication authentication) {
+        String hotelId = authentication.getName();
+        return ResponseEntity.ok(adminAuthService.getPaymentStatus(hotelId));
+    }
+
     @PostMapping("/refresh-token")
     public ResponseEntity<Map<String, Object>> refresh(@RequestBody Map<String, String> request) {
         String oldRefreshToken = request.get("refreshToken");

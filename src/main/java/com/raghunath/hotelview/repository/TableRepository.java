@@ -9,13 +9,13 @@ import java.util.Optional;
 
 public interface TableRepository extends MongoRepository<RestaurantTable, String> {
 
-    List<RestaurantTable> findAllByHotelIdOrderByTableNumberAsc(String hotelId);
+    List<RestaurantTable> findAllByHotelIdOrderByTableNameAsc(String hotelId);
 
-    Optional<RestaurantTable> findByHotelIdAndTableNumber(String hotelId, int tableNumber);
+    Optional<RestaurantTable> findByHotelIdAndTableName(String hotelId, String tableName);
 
     boolean existsByHotelId(String hotelId);
 
-    boolean existsByHotelIdAndTableNumber(String hotelId, int tableNumber);
+    boolean existsByHotelIdAndTableName(String hotelId, String tableName);
 
     Long countByHotelIdAndStatus(String hotelId, String status);
     // Uses 'Not' to exclude a specific status

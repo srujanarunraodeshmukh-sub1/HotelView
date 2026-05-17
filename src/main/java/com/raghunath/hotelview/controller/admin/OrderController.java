@@ -38,30 +38,30 @@ public class OrderController {
     }
 
     // 1. SAVE DRAFT FOR SPECIFIC TABLE
-    @PostMapping("/draft/{tableNumber}")
-    public ResponseEntity<String> saveOrderDraft(@PathVariable int tableNumber, @Valid @RequestBody List<OrderItem> items){
+    @PostMapping("/draft/{tableName}")
+    public ResponseEntity<String> saveOrderDraft(@PathVariable String tableName, @Valid @RequestBody List<OrderItem> items){
         String hotelId = SecurityContextHolder.getContext().getAuthentication().getName();
-        orderService.saveDraft(hotelId, tableNumber, items);
+        orderService.saveDraft(hotelId, tableName, items);
         return ResponseEntity.ok("Draft saved successfully");
     }
 
     // 2. GET DRAFT FOR SPECIFIC TABLE
-    @GetMapping("/draft/{tableNumber}")
-    public OrderDraft getOrderDraft(@PathVariable int tableNumber){
+    @GetMapping("/draft/{tableName}")
+    public OrderDraft getOrderDraft(@PathVariable String tableName){
         String hotelId = SecurityContextHolder.getContext().getAuthentication().getName();
-        return orderService.getDraft(hotelId, tableNumber);
+        return orderService.getDraft(hotelId, tableName);
     }
 
     // 3. PLACE TABLE ORDER
-    @PostMapping("/confirm/{tableNumber}")
-    public ResponseEntity<String> confirmOrder(@PathVariable int tableNumber, @Valid @RequestBody OrderRequest request
+    @PostMapping("/confirm/{tableName}")
+    public ResponseEntity<String> confirmOrder(@PathVariable String tableName, @Valid @RequestBody OrderRequest request
     ) {
         String hotelId = SecurityContextHolder.getContext().getAuthentication().getName();
         String waiterId = getAuthenticatedUserId();
 
         orderService.confirmOrder(
                 hotelId,
-                tableNumber,
+                tableName,
                 request.getItems(),
                 waiterId,
                 request.getComment()
@@ -83,11 +83,11 @@ public class OrderController {
     }
 
     // 5. FETCH SPECIFIC TABLE ORDERS (Latest First)
-    @GetMapping("/table/{tableNumber}")
-    public ResponseEntity<List<KitchenOrder>> getTableOrders(@PathVariable int tableNumber) {
+    @GetMapping("/table/{tableName}")
+    public ResponseEntity<List<KitchenOrder>> getTableOrders(@PathVariable String tableName) {
         String hotelId = SecurityContextHolder.getContext().getAuthentication().getName();
         // Fetches all orders for this table that are not yet PAID, newest at top
-        return ResponseEntity.ok(orderService.getOrdersByTable(hotelId, tableNumber));
+        return ResponseEntity.ok(orderService.getOrdersByTable(hotelId, tableName));
     }
 
     // 6. CHECKOUT ORDER FOR TABLE

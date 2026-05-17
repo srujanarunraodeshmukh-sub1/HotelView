@@ -52,10 +52,9 @@ public class Admin {
     private String restaurantContact;
     private String restaurantLogo;
     private String restaurantUpi;
+    private String personalMessage;
 
-    // STEP 3: Stores the actual IDs (e.g., {"ZOMATO": "ZOM123"})
     private Map<String, String> platformIds = new HashMap<>();
 
-    // STEP 5: Stores if it's currently active (e.g., {"ZOMATO": true})
     private Map<String, Boolean> integrationStatus = new HashMap<>();
 }

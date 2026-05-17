@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(collection = "user_payment_submissions") // Separate from system payment info
+@Document(collection = "user_payment_submissions")
 public class UserPaymentSubmission {
     @Id
     private String id;
@@ -17,11 +17,9 @@ public class UserPaymentSubmission {
     private String name;
     private String address;
     private String screenshotUrl;
-    private String submissionDate; // e.g., 2026-05-10
-    private String submissionTime; // e.g., 16:15:00
+    private String submissionDate;
+    private String submissionTime;
     private LocalDateTime createdAt;
-    private String status; // Default: "PENDING"
-
-    public void save(UserPaymentSubmission submission) {
-    }
+    private String status;
+    // REMOVED the wrong save() method
 }

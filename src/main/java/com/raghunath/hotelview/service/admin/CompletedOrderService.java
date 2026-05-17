@@ -161,14 +161,14 @@ public class CompletedOrderService {
 
         // 🚀 2. Calculate deduction and identify tables involved
         double totalDeduction = 0.0;
-        Set<Integer> tablesToUpdate = new HashSet<>();
+        Set<String> tablesToUpdate = new HashSet<>();
 
         // FIX: Get tableNumber from the nested list in CompletedOrder
         for (CompletedOrder o : completedOrders) {
             totalDeduction += (o.getTotalPayable() != null) ? o.getTotalPayable() : 0.0;
 
             if (o.getAllOrders() != null && !o.getAllOrders().isEmpty()) {
-                Integer tNum = o.getAllOrders().get(0).getTableNumber();
+                String tNum = o.getAllOrders().get(0).getTableName();
                 if (tNum != null) tablesToUpdate.add(tNum);
             }
         }
@@ -176,16 +176,16 @@ public class CompletedOrderService {
         // Process Kitchen Orders normally
         for (KitchenOrder o : kitchenOrders) {
             totalDeduction += (o.getTotalAmount() != null) ? o.getTotalAmount() : 0.0;
-            if (o.getTableNumber() != null) {
-                tablesToUpdate.add(o.getTableNumber());
+            if (o.getTableName() != null) {
+                tablesToUpdate.add(o.getTableName());
             }
         }
 
         // 3. Update the RestaurantTable currentBill
         if (!tablesToUpdate.isEmpty()) {
-            for (Integer tableNum : tablesToUpdate) {
+            for (String tableName : tablesToUpdate) {
                 double finalTotalDeduction = totalDeduction;
-                tableRepository.findByHotelIdAndTableNumber(hotelId, tableNum).ifPresent(table -> {
+                tableRepository.findByHotelIdAndTableName(hotelId, tableName).ifPresent(table -> {
                     double current = (table.getCurrentBill() != null) ? table.getCurrentBill() : 0.0;
                     double newBill = Math.max(0, current - finalTotalDeduction);
 

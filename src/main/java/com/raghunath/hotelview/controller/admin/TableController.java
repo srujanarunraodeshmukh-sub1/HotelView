@@ -34,8 +34,8 @@ public class TableController {
 
     @PutMapping("/transfer/{fromTable}/{toTable}")
     public ResponseEntity<String> transferTableOrders(
-            @PathVariable int fromTable,
-            @PathVariable int toTable) {
+            @PathVariable String fromTable,
+            @PathVariable String toTable) {
         String hotelId = SecurityContextHolder.getContext().getAuthentication().getName();
         tableService.transferTableOrders(hotelId, fromTable, toTable);
         return ResponseEntity.ok("Orders transferred to Table " + toTable + " successfully");

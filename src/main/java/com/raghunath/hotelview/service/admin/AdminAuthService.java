@@ -24,10 +24,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -45,7 +42,6 @@ public class AdminAuthService {
     @Autowired
     private MongoTemplate mongoTemplate;
 
-    // Helper to get current time in IST
     private LocalDateTime getNowIST() {
         return ZonedDateTime.now(ZoneId.of("Asia/Kolkata")).toLocalDateTime();
     }
@@ -62,7 +58,7 @@ public class AdminAuthService {
         // 2. Check Subscription Status (Send as flag, don't block)
         boolean isExpired = getNowIST().isAfter(admin.getSubscriptionExpiry());
 
-        // --- SMART SESSION MANAGEMENT ---
+        // SMART SESSION MANAGEMENT
         List<AdminRefreshToken> activeSessions = adminRefreshTokenRepository.findByUserIdOrderByCreatedAtAsc(admin.getHotelId());
         int allowedLogins = (admin.getMaxLogins() > 0) ? admin.getMaxLogins() : 1;
 
@@ -119,8 +115,6 @@ public class AdminAuthService {
         Query query = new Query(Criteria.where("_id").is("hotel_id_sequence"));
         Update update = new Update().inc("seq", 1);
 
-        // upsert: true creates the document if it's the very first registration
-        // returnNew: true ensures we get the incremented value
         DatabaseCounter counter = mongoTemplate.findAndModify(
                 query,
                 update,
@@ -134,8 +128,6 @@ public class AdminAuthService {
         return String.format("HOTEL%05d", sequence);
     }
 
-    // Shared logic for Login and Register to generate tokens
-    // Add "boolean isExpired" as the 3rd parameter here 👇
     private LoginResponse performLogin(Admin admin, String message, boolean isExpired) {
         String accessToken = jwtUtil.generateAccessToken(admin.getHotelId(), admin.getHotelId(), "ADMIN");
         String refreshToken = jwtUtil.generateRefreshToken(admin.getHotelId(), admin.getHotelId(), "ADMIN");
@@ -161,7 +153,6 @@ public class AdminAuthService {
                 .restaurantUpi(admin.getRestaurantUpi())
                 .restaurantName(admin.getRestaurantName())
                 .address(admin.getAddress())
-                // Map the boolean flag to the DTO 👇
                 .isPlanExpired(isExpired)
                 .expiryDate(admin.getSubscriptionExpiry().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")))
                 .build();
@@ -223,11 +214,8 @@ public class AdminAuthService {
     }
 
     public String submitPaymentProof(String url, String name, String address, String hotelId) {
-
-        // 1. Capture IST Time
         ZonedDateTime nowIST = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
 
-        // 2. Build the record
         UserPaymentSubmission submission = UserPaymentSubmission.builder()
                 .hotelId(hotelId)
                 .name(name)
@@ -235,15 +223,39 @@ public class AdminAuthService {
                 .screenshotUrl(url)
                 .submissionDate(nowIST.format(DateTimeFormatter.ISO_LOCAL_DATE))
                 .submissionTime(nowIST.format(DateTimeFormatter.ofPattern("HH:mm:ss")))
-                .createdAt(nowIST.toLocalDateTime())
+                .createdAt(nowIST.toLocalDateTime()) // IST time
                 .status("PENDING")
                 .build();
 
-        // 3. Save to MongoDB
         userPaymentSubmissionRepository.save(submission);
 
-        // 4. Return the specific success message requested
-        return "congratulations you have successfully submitted your payment details we will shortly verify you details and upgrade you plan within few hours";
+        return "congratulations you have successfully submitted your payment details we will shortly verify your details and upgrade your plan within few hours";
+    }
+
+    public Map<String, Object> getPaymentStatus(String hotelId) {
+
+        Optional<UserPaymentSubmission> submission =
+                userPaymentSubmissionRepository.findTopByHotelIdOrderByIdDesc(hotelId);
+
+        if (submission.isEmpty()) {
+            return Map.of(
+                    "exists", false,
+                    "message", "No payment submission found"
+            );
+        }
+
+        UserPaymentSubmission s = submission.get();
+
+        return Map.of(
+                "exists", true,
+                "hotelId", s.getHotelId() != null ? s.getHotelId() : "",
+                "name", s.getName() != null ? s.getName() : "",
+                "address", s.getAddress() != null ? s.getAddress() : "",
+                "screenshotUrl", s.getScreenshotUrl() != null ? s.getScreenshotUrl() : "",
+                "submissionDate", s.getSubmissionDate() != null ? s.getSubmissionDate() : "",
+                "submissionTime", s.getSubmissionTime() != null ? s.getSubmissionTime() : "",
+                "status", s.getStatus() != null ? s.getStatus() : "PENDING"
+        );
     }
 
     private BusinessDetailsDTO mapToDTO(Admin admin) {

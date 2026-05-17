@@ -46,6 +46,7 @@ public class OrderService {
     private final CompleteOrderRepository completeOrderRepository;
     private final VersionService versionService;
     private final ExternalOrderRepository externalOrderRepository;
+    private final SalesAggregationRepository salesAggregationRepository;
     private static final ZoneId IST = ZoneId.of("Asia/Kolkata");
 
     @Autowired
@@ -55,14 +56,14 @@ public class OrderService {
      * 1. SAVE DRAFT: Waiter/Admin adds items.
      * Since the waiter has full access, this updates the live table total immediately.
      */
-    public void saveDraft(String hotelId, int tableNumber, List<OrderItem> items) {
-        validateTableExists(hotelId, tableNumber);
+    public void saveDraft(String hotelId, String tableName, List<OrderItem> items) {
+        validateTableExists(hotelId, tableName);
         Double total = items.stream().mapToDouble(OrderItem::getSubTotal).sum();
 
-        OrderDraft draft = draftRepository.findByHotelIdAndTableNumber(hotelId, tableNumber)
+        OrderDraft draft = draftRepository.findByHotelIdAndTableName(hotelId, tableName)
                 .orElse(OrderDraft.builder()
                         .hotelId(hotelId)
-                        .tableNumber(tableNumber)
+                        .tableName(tableName)
                         .build());
 
         draft.setItems(items);
@@ -74,8 +75,8 @@ public class OrderService {
     /**
      * 2. FETCH DRAFT: View current unsent items.
      */
-    public OrderDraft getDraft(String hotelId, int tableNumber) {
-        return draftRepository.findByHotelIdAndTableNumber(hotelId, tableNumber).orElse(null);
+    public OrderDraft getDraft(String hotelId, String tableName) {
+        return draftRepository.findByHotelIdAndTableName(hotelId, tableName).orElse(null);
     }
 
     /**
@@ -83,7 +84,7 @@ public class OrderService {
      * Table status becomes 'PENDING' to alert the Chef.
      */
     @Transactional
-    public String confirmOrder(String hotelId, int tableNumber, List<OrderItem> items, String waiterId, String comment) {
+    public String confirmOrder(String hotelId, String tableName, List<OrderItem> items, String waiterId, String comment) {
         // 1. Subscription Check
         Admin admin = adminRepository.findByHotelId(hotelId)
                 .orElseThrow(() -> new RuntimeException("Admin not found"));
@@ -93,13 +94,13 @@ public class OrderService {
         }
 
         // 2. Original Logic
-        validateTableExists(hotelId, tableNumber);
+        validateTableExists(hotelId, tableName);
         ZonedDateTime nowIST = getISTNow();
         Double total = items.stream().mapToDouble(OrderItem::getSubTotal).sum();
 
         KitchenOrder kOrder = KitchenOrder.builder()
                 .hotelId(hotelId)
-                .tableNumber(tableNumber)
+                .tableName(tableName)
                 .orderType("TABLE")
                 .items(items)
                 .totalAmount(total)
@@ -112,18 +113,18 @@ public class OrderService {
                 .build();
 
         kitchenOrderRepository.save(kOrder);
-        draftRepository.findByHotelIdAndTableNumber(hotelId, tableNumber).ifPresent(draftRepository::delete);
+        draftRepository.findByHotelIdAndTableName(hotelId, tableName).ifPresent(draftRepository::delete);
 
-        updateTableVisualStatus(hotelId, tableNumber, "PENDING");
-        updateTableBill(hotelId, tableNumber, total, false);
+        updateTableVisualStatus(hotelId, tableName, "PENDING");
+        updateTableBill(hotelId, tableName, total, false);
 
         return "Order sent to kitchen";
     }
 
-    private void validateTableExists(String hotelId, int tableNumber) {
-        if (!tableRepository.existsByHotelIdAndTableNumber(hotelId, tableNumber)) {
-            log.error("VALIDATION_FAILED: Table {} not found for Hotel {}", tableNumber, hotelId);
-            throw new RuntimeException("Invalid Table Number: " + tableNumber);
+    private void validateTableExists(String hotelId, String tableName) {
+        if (!tableRepository.existsByHotelIdAndTableName(hotelId, tableName)) {
+            log.error("VALIDATION_FAILED: Table {} not found for Hotel {}", tableName, hotelId);
+            throw new RuntimeException("Invalid Table Number: " + tableName);
         }
     }
 
@@ -146,7 +147,7 @@ public class OrderService {
 
         KitchenOrder deliveryOrder = KitchenOrder.builder()
                 .hotelId(hotelId)
-                .tableNumber(null)
+                .tableName(null)
                 .orderType(orderType.toUpperCase())
                 .items(items)
                 .totalAmount(total)
@@ -166,9 +167,9 @@ public class OrderService {
     /**
      * 5. FETCH TABLE ORDERS: Latest orders first.
      */
-    public List<KitchenOrder> getOrdersByTable(String hotelId, int tableNumber) {
-        return kitchenOrderRepository.findByHotelIdAndTableNumberAndStatusNotOrderByCreatedAtDesc(
-                hotelId, tableNumber, "PAID");
+    public List<KitchenOrder> getOrdersByTable(String hotelId, String tableName) {
+        return kitchenOrderRepository.findByHotelIdAndTableNameAndStatusNotOrderByCreatedAtDesc(
+                hotelId, tableName, "PAID");
     }
 
     /**
@@ -374,7 +375,7 @@ public class OrderService {
         kitchenOrderRepository.save(order);
 
         // 5. Update Table Bill Difference
-        updateTableBill(hotelId, order.getTableNumber(), (newTotal - oldTotal), false);
+        updateTableBill(hotelId, order.getTableName(), (newTotal - oldTotal), false);
 
         // 6. Save Audit Logs to the separate collection
         if (!editLogs.isEmpty()) {
@@ -504,7 +505,7 @@ public class OrderService {
         // 4. KITCHEN TRANSFORMATION
         KitchenOrder kitchenOrder = KitchenOrder.builder()
                 .hotelId(ext.getHotelId())
-                .tableNumber(null) // NULL signals Home Delivery
+                .tableName(null) // NULL signals Home Delivery
                 .orderType("EXTERNAL_" + ext.getPlatform())
                 .items(ext.getItems())
                 .totalAmount(ext.getTotalAmount())
@@ -549,10 +550,10 @@ public class OrderService {
     /**
      * HELPER: Syncs the physical Table entity with the digital order status.
      */
-    private void updateTableVisualStatus(String hotelId, Integer tableNumber, String status) {
-        if (tableNumber == null) return; // Never update table UI for delivery
+    private void updateTableVisualStatus(String hotelId, String tableName, String status) {
+        if (tableName == null) return; // Never update table UI for delivery
 
-        tableRepository.findByHotelIdAndTableNumber(hotelId, tableNumber).ifPresent(t -> {
+        tableRepository.findByHotelIdAndTableName(hotelId, tableName).ifPresent(t -> {
             t.setStatus(status);
             t.setUpdatedAt(LocalDateTime.now());
             tableRepository.save(t);
@@ -561,10 +562,10 @@ public class OrderService {
 
     // Inside OrderService.java (Add the new method)
 
-    private void updateTableBill(String hotelId, Integer tableNumber, Double amountToAdd, boolean isReset) {
-        if (tableNumber == null) return;
+    private void updateTableBill(String hotelId, String tableName, Double amountToAdd, boolean isReset) {
+        if (tableName == null) return;
 
-        tableRepository.findByHotelIdAndTableNumber(hotelId, tableNumber).ifPresent(table -> {
+        tableRepository.findByHotelIdAndTableName(hotelId, tableName).ifPresent(table -> {
             if (isReset) {
                 table.setCurrentBill(0.0);
                 table.setStatus("INACTIVE"); //  Your Inactive Status
@@ -583,8 +584,24 @@ public class OrderService {
             table.setUpdatedAt(LocalDateTime.now());
             tableRepository.save(table);
             log.info("BILL_SYNC: Hotel {} Table {} updated to {}. Status: {}",
-                    hotelId, tableNumber, table.getCurrentBill(), table.getStatus());
+                    hotelId, tableName, table.getCurrentBill(), table.getStatus());
         });
+    }
+
+    public SalesAnalyticsDTO getTodayHourlySales(String hotelId) {
+        return salesAggregationRepository.getTodayAnalytics(hotelId);
+    }
+
+    public SalesAnalyticsDTO getCurrentWeekSales(String hotelId) {
+        return salesAggregationRepository.getWeekAnalytics(hotelId);
+    }
+
+    public SalesAnalyticsDTO getCurrentMonthSales(String hotelId) {
+        return salesAggregationRepository.getMonthAnalytics(hotelId);
+    }
+
+    public SalesAnalyticsDTO getCurrentYearSales(String hotelId) {
+        return salesAggregationRepository.getYearAnalytics(hotelId);
     }
 
     private ZonedDateTime getISTNow() {

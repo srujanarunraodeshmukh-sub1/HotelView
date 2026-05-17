@@ -146,16 +146,16 @@ public class SalesSyncController {
     // ─────────────────────────────────────────────────────
     @GetMapping("/kitchen/version")
     public ResponseEntity<Map<String, Object>> getKitchenVersion(
-            @RequestParam int tableNumber) {
+            @RequestParam String tableName) {
 
         String hotelId = getHotelId();
         long version = versionService.getKitchenVersion(hotelId);
-        long count = versionService.getKitchenOrderCount(hotelId, tableNumber);
+        long count = versionService.getKitchenOrderCount(hotelId, tableName);
 
         return ResponseEntity.ok(Map.of(
                 "version", version,             // timestamp millis
                 "activeOrderCount", count,      // active orders for this table
-                "tableNumber", tableNumber
+                "tableNumber", tableName
         ));
     }
 
@@ -165,7 +165,7 @@ public class SalesSyncController {
     // ─────────────────────────────────────────────────────
     @GetMapping("/kitchen/delta")
     public ResponseEntity<Map<String, Object>> getKitchenDelta(
-            @RequestParam int tableNumber,
+            @RequestParam String tableName,
             @RequestParam long since) {
 
         String hotelId = getHotelId();
@@ -175,14 +175,14 @@ public class SalesSyncController {
                 .toLocalDateTime();
 
         List<?> deltaOrders = versionService.getKitchenDeltaSince(
-                hotelId, tableNumber, sinceTime);
+                hotelId, tableName, sinceTime);
         long activeCount = versionService.getKitchenOrderCount(
-                hotelId, tableNumber);
+                hotelId, tableName);
 
         return ResponseEntity.ok(Map.of(
                 "deltaOrders", deltaOrders,     // only changed orders for table
                 "activeOrderCount", activeCount,
-                "tableNumber", tableNumber
+                "tableName", tableName
         ));
     }
 }

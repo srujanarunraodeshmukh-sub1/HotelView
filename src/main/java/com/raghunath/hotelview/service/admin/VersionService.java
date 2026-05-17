@@ -102,10 +102,10 @@ public class VersionService {
         return tableRepository.countByHotelId(hotelId);
     }
 
-    public long getKitchenOrderCount(String hotelId, int tableNumber) {
+    public long getKitchenOrderCount(String hotelId, String tableName) {
         return kitchenOrderRepository
-                .countByHotelIdAndTableNumberAndStatusNot(
-                        hotelId, tableNumber, "PAID");
+                .countByHotelIdAndTableNameAndStatusNot(
+                        hotelId, tableName, "PAID");
     }
 
     // ── Delta Helpers ─────────────────────────────────────
@@ -115,10 +115,10 @@ public class VersionService {
     }
 
     public List<KitchenOrder> getKitchenDeltaSince(
-            String hotelId, int tableNumber, LocalDateTime since) {
+            String hotelId, String tableName, LocalDateTime since) {
         return kitchenOrderRepository
-                .findByHotelIdAndTableNumberAndUpdatedAtAfterOrderByCreatedAtDesc(
-                        hotelId, tableNumber, since);
+                .findByHotelIdAndTableNameAndUpdatedAtAfterOrderByCreatedAtDesc(
+                        hotelId, tableName, since);
     }
 
     // ── Helper ────────────────────────────────────────────

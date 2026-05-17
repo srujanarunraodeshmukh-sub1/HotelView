@@ -20,8 +20,8 @@ public class KitchenOrder {
     @org.springframework.data.mongodb.core.mapping.Field("hotelId")
     private String hotelId;
 
-    @org.springframework.data.mongodb.core.mapping.Field("tableNumber")
-    private Integer tableNumber; // Integer allows NULL for Home Delivery
+    @org.springframework.data.mongodb.core.mapping.Field("tableName")
+    private String tableName; // Integer allows NULL for Home Delivery
 
     @org.springframework.data.mongodb.core.mapping.Field("orderType")
     private String orderType;
