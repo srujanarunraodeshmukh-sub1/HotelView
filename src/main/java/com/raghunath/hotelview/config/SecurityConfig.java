@@ -74,6 +74,7 @@ public class SecurityConfig {
 
                         // 2. STAFF & USER MANAGEMENT (Admin Only)
                         .requestMatchers(
+                                "/api/v1/orders/completed/instant/checkout",
                                 "/api/v1/employees/register",
                                 "/api/v1/admin/profile",
                                 "/api/v1/admin/business",
@@ -81,9 +82,9 @@ public class SecurityConfig {
                                 "/api/v1/employees/**",
                                 "/api/v1/admin/myplan/details",
                                 "/api/v1/admin/plan/details",
-                                "api/v1/admin/integrations",
-                                "api/v1/admin/customer/details",
-                                "api/v1/admin/submit/paymentDetails"
+                                "/api/v1/admin/integrations",
+                                "/api/v1/admin/customer/details",
+                                "/api/v1/admin/submit/paymentDetails"
                         ).hasRole("ADMIN")
 
                         // 3. TABLE OPERATIONS (Ordered by Specificity)
@@ -100,6 +101,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/v1/orders/kitchen/*/confirm-edit").hasAnyRole("ADMIN", "WAITER")
                         .requestMatchers(HttpMethod.GET, "/api/v1/orders/kitchen/**").hasAnyRole("WAITER", "CHEF", "ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/orders/kitchen/**").hasAnyRole("CHEF", "ADMIN")
+
 
                         // 5. ORDER & SALES OPERATIONS (Admin + Waiter)
                         .requestMatchers("/api/v1/orders/summary/completed/**").hasRole("ADMIN")

@@ -50,12 +50,22 @@ public class AdminAuthService {
         Admin admin = adminRepository.findByMobile(request.getMobile())
                 .orElseThrow(() -> new RuntimeException("Admin not found"));
 
-        // 1. Password check
+        // 1. STEP ONE: Check Administrative Approval
+        if (!admin.isApproved()) {
+            throw new RuntimeException("Your account is not Approved. Contact Support Team!");
+        }
+
+        // 2. STEP TWO: Check Operational Active Status
+        if (!admin.isActive()) {
+            throw new RuntimeException("Your account is not currently Active. Contact Support Team");
+        }
+
+        // 3. STEP THREE: Password check (Only evaluated if account is approved and active)
         if (!passwordEncoder.matches(request.getPassword(), admin.getPassword())) {
             throw new RuntimeException("Invalid password");
         }
 
-        // 2. Check Subscription Status (Send as flag, don't block)
+        // 4. STEP FOUR: Check Subscription Status (Sets flag, doesn't block access)
         boolean isExpired = getNowIST().isAfter(admin.getSubscriptionExpiry());
 
         // SMART SESSION MANAGEMENT
@@ -88,12 +98,12 @@ public class AdminAuthService {
         // 3. Generate Incremental Hotel ID using the sequence method
         String incrementalHotelId = generateIncrementalHotelId();
 
-        // 4. Create and Save New Admin
+        // 4. Create and Save New Admin (Setting default states)
         Admin newAdmin = Admin.builder()
                 .name(request.getName())
                 .mobile(request.getMobile())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .hotelId(incrementalHotelId) // Now uses HOTEL00001, etc.
+                .hotelId(incrementalHotelId)
                 .isApproved(true)
                 .isActive(true)
                 .subscriptionStart(now)
@@ -124,7 +134,6 @@ public class AdminAuthService {
 
         long sequence = (counter != null) ? counter.getSeq() : 1;
 
-        // Formats as HOTEL00001 (5 digits)
         return String.format("HOTEL%05d", sequence);
     }
 

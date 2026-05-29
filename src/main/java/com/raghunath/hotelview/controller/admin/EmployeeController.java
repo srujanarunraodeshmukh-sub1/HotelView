@@ -18,7 +18,6 @@ public class EmployeeController {
 
     private final EmployeeService employeeService;
 
-    // ADMIN ONLY: Add new staff
     @PostMapping("/register")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> addEmployee(@RequestBody Employee employee) {
@@ -26,7 +25,6 @@ public class EmployeeController {
         return ResponseEntity.ok(employeeService.registerEmployee(employee, hotelId));
     }
 
-    // PUBLIC: Staff Login (Waiter/Chef)
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> login(@RequestBody Map<String, String> credentials) {
         return ResponseEntity.ok(employeeService.login(
@@ -35,7 +33,6 @@ public class EmployeeController {
         ));
     }
 
-    // ADMIN ONLY: View all staff members
     @GetMapping("/list")
     @PreAuthorize("hasRole('ADMIN')")
     public List<Employee> listStaff() {
@@ -48,7 +45,6 @@ public class EmployeeController {
         return ResponseEntity.ok(employeeService.refreshEmployeeToken(request.get("refreshToken")));
     }
 
-    // ADMIN ONLY: Update staff details
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> updateEmployee(@PathVariable String id, @RequestBody Employee employee) {
@@ -56,7 +52,6 @@ public class EmployeeController {
         return ResponseEntity.ok(employeeService.updateEmployee(id, hotelId, employee));
     }
 
-    // ADMIN ONLY: Delete staff member
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> deleteEmployee(@PathVariable String id) {
@@ -70,7 +65,6 @@ public class EmployeeController {
         String empId = SecurityContextHolder.getContext().getAuthentication().getName();
         String token = request.get("refreshToken");
 
-        // This call must match the (String, String) signature in the Service
         employeeService.logoutEmployee(empId, token);
 
         return ResponseEntity.ok("Staff logged out successfully");

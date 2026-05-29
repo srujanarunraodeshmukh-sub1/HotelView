@@ -35,6 +35,7 @@ public class CompletedOrder {
     private Double totalPayable;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
+    private String checkoutBy;
     private LocalDateTime checkoutAt;
     private String checkoutDate;
     private String checkoutTime;

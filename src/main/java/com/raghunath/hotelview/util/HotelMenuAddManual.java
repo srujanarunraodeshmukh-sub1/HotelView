@@ -25,7 +25,7 @@ public class HotelMenuAddManual implements CommandLineRunner {
     private final String URL = "http://localhost:8080/api/v1/menu/add";
 
     // PASTE YOUR TOKEN HERE
-    private final String ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJob3RlbElkIjoiSE9URUwwMDAwMSIsInJvbGUiOiJBRE1JTiIsInN1YiI6IkhPVEVMMDAwMDEiLCJpYXQiOjE3Nzg2NTg5NjUsImV4cCI6MTc3ODY1OTg2NX0.8LPO5fR3PQzi6vh83l3YyuDswkx-a3LdlV3xjek7dD8";
+    private final String ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiQURNSU4iLCJob3RlbElkIjoiSE9URUwwMDAwMiIsInN1YiI6IkhPVEVMMDAwMDIiLCJpYXQiOjE3NzkyMDk0NzIsImV4cCI6MTc3OTIxMDM3Mn0.sJWPLggxFdnmJRkOy7QOS4rkDECfz0WAeoDhFjmS0a4";
 
     @Override
     public void run(String... args) throws Exception {

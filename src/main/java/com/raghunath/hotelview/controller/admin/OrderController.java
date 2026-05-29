@@ -103,14 +103,22 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
 
-    // 7. GET STATISTICS
+    // 7. CHECKOUT ORDER FOR TABLE
+    @PostMapping("/instant/checkout")
+    public ResponseEntity<String> processInstantOrder(@Valid @RequestBody InstantCheckoutRequest request) {
+        String hotelId = SecurityContextHolder.getContext().getAuthentication().getName();
+        orderService.instantOrderAndCheckout(hotelId, request);
+        return ResponseEntity.ok("Success");
+    }
+
+    // 8. GET STATISTICS
     @GetMapping("/dashboard/stats")
     public ResponseEntity<DashboardStatsDTO> getDashboardStats() {
         String hotelId = getAuthenticatedUserId();
         return ResponseEntity.ok(orderService.getDashboardStats(hotelId));
     }
 
-    // 8. EDIT ORDER
+    // 9. EDIT ORDER
     @PutMapping("/kitchen/{orderId}/confirm-edit")
     public ResponseEntity<String> confirmEdit(
             @PathVariable String orderId,
@@ -120,7 +128,7 @@ public class OrderController {
         return ResponseEntity.ok("Order updated and logs saved successfully");
     }
 
-    // 9. Get Full Table History via Completed Order ID
+    // 10. Get Full Table History via Completed Order ID
     @GetMapping("/summary/completed/{completedOrderId}")
     public ResponseEntity<Map<String, Object>> getFullTableSummary(@PathVariable String completedOrderId) {
         String hotelId = SecurityContextHolder.getContext().getAuthentication().getName();

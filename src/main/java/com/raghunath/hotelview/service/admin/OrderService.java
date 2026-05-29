@@ -211,7 +211,8 @@ public class OrderService {
 
         Double grandTotal = activeOrders.stream().mapToDouble(KitchenOrder::getTotalAmount).sum();
         Double discountPercent = (request.getDiscount() != null) ? request.getDiscount() : 0.0;
-        Double totalPayable = grandTotal - ((grandTotal * discountPercent) / 100);
+        Double discountAmount = (grandTotal * discountPercent) / 100; // Calculate the actual amount
+        Double totalPayable = grandTotal - discountAmount;
 
         ZonedDateTime nowIST = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
 
@@ -224,6 +225,11 @@ public class OrderService {
                 .customerAddress(StringUtils.hasText(request.getCustomerAddress()) ? request.getCustomerAddress() : "N/A")
                 .allOrders(activeOrders)
                 .grandTotal(grandTotal)
+                // --- ADDED THESE THREE LINES ---
+                .paymentStatus("PAID") // Set default or pull from request if applicable
+                .discountPercent(discountPercent)
+                .discountAmount(discountAmount)
+                // -------------------------------
                 .totalPayable(totalPayable)
                 .checkoutAt(nowIST.toLocalDateTime())
                 .checkoutDate(nowIST.format(DateTimeFormatter.ISO_LOCAL_DATE))
@@ -259,7 +265,7 @@ public class OrderService {
     }
 
     /**
-     * 7. FETCH DASHBOARD STATS: Consolidates metrics from 5 different collections.
+     * 8. FETCH DASHBOARD STATS: Consolidates metrics from 5 different collections.
      */
     public DashboardStatsDTO getDashboardStats(String hotelId) {
         // 1. Time Setup (Indian Standard Time)
@@ -309,7 +315,7 @@ public class OrderService {
     }
 
     /**
-     * 8. EDIT ORDER: edit order and save edit details.
+     * 9. EDIT ORDER: edit order and save edit details.
      */
     @Transactional
     public void confirmOrderEdit(String hotelId, String orderId, List<OrderItem> newItems) {
@@ -386,7 +392,60 @@ public class OrderService {
     }
 
     /**
-     * 9. Get Full Table History via Completed Order ID
+     * 7. CHECKOUT ORDERS: checkout all orders.
+     */
+    @Transactional
+    public void instantOrderAndCheckout(String hotelId, InstantCheckoutRequest request) {
+        String currentUserId = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        // 1. Subscription Check
+        Admin admin = adminRepository.findByHotelId(hotelId)
+                .orElseThrow(() -> new RuntimeException("Admin not found"));
+
+        if (getISTNow().toLocalDateTime().isAfter(admin.getSubscriptionExpiry())) {
+            throw new RuntimeException("Kindly upgrade to the Standard or Premium plan.");
+        }
+
+        // 2. BACKEND FINANCIAL CALCULATIONS
+        List<OrderItem> items = request.getItems();
+
+        Double grandTotal = items.stream().mapToDouble(OrderItem::getSubTotal).sum();
+        Double discountPercent = request.getDiscountPercent();
+        Double discountAmount = (grandTotal * discountPercent) / 100.0;
+        Double totalPayable = Math.max(0.0, grandTotal - discountAmount);
+
+        ZonedDateTime nowIST = getISTNow();
+
+        // 3. Prepare an in-memory transient order object assigning ONLY the items array
+        // Omit hotelId and orderType here so they are not written to the inner document
+        KitchenOrder transientOrder = KitchenOrder.builder()
+                .items(items)
+                .build();
+
+        // 4. Construct and Save CompletedOrder directly to DB
+        CompletedOrder finalBill = CompletedOrder.builder()
+                .hotelId(hotelId)
+                .orderType("INSTANT")
+                .customerName(null)
+                .customerMobile(null)
+                .customerAddress(null)
+                .allOrders(Collections.singletonList(transientOrder)) // Type matches List<KitchenOrder> perfectly
+                .grandTotal(grandTotal)
+                .paymentStatus("PAID")
+                .discountPercent(discountPercent)
+                .discountAmount(discountAmount)
+                .totalPayable(totalPayable)
+                .checkoutBy(currentUserId)
+                .checkoutAt(nowIST.toLocalDateTime())
+                .checkoutDate(nowIST.format(DateTimeFormatter.ISO_LOCAL_DATE))
+                .checkoutTime(nowIST.format(DateTimeFormatter.ofPattern("HH:mm:ss")))
+                .build();
+
+        completeOrderRepository.save(finalBill);
+    }
+
+    /**
+     * 10. Get Full Table History via Completed Order ID
      */
     public Map<String, Object> getAggregatedTableSummary(String hotelId, String completedOrderId) {
         // 1. Fetch the main Completed Order document (The "Parent")
