@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -74,30 +75,35 @@ public class SalesSyncController {
     // ─────────────────────────────────────────────────────
     @GetMapping("/sales/delta")
     public ResponseEntity<Map<String, Object>> getSalesDelta(
-            @RequestParam long since) {  // ✅ long instead of String
+            @RequestParam long since) { // ✅ long instead of String
 
         String hotelId = getHotelId();
-        String todayDate = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"))
-                .format(DateTimeFormatter.ISO_LOCAL_DATE);
+        ZonedDateTime nowIST = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
+        String todayDate = nowIST.format(DateTimeFormatter.ISO_LOCAL_DATE);
 
-        // ✅ Convert millis timestamp to LocalDateTime
+        // 1. Convert millis timestamp to LocalDateTime
         LocalDateTime sinceTime = Instant.ofEpochMilli(since)
                 .atZone(ZoneId.of("Asia/Kolkata"))
                 .toLocalDateTime();
 
-        List<CompletedOrder> deltaOrders =
-                orderRepo.findByHotelIdAndLastModifiedAfterOrderByLastModifiedDesc(
-                        hotelId, sinceTime);
+        // 🚀 2. FIXED: Extract the clean YYYY-MM-DD date string to pass to our updated query layout
+        String sinceDateStr = sinceTime.toLocalDate().toString();
+
+        // 🚀 3. FIXED: Call the updated repository method name using our combined string properties
+        List<CompletedOrder> deltaOrders = orderRepo
+                .findByHotelIdAndCheckoutDateGreaterThanEqualOrderByCheckoutDateDescCheckoutTimeDesc(
+                        hotelId, sinceDateStr);
 
         long serverCount = orderRepo.countByHotelIdAndCheckoutDate(hotelId, todayDate);
         long totalCount = orderRepo.countByHotelId(hotelId);
 
-        return ResponseEntity.ok(Map.of(
-                "deltaOrders", deltaOrders,
-                "serverCount", serverCount,
-                "totalCount", totalCount,
-                "date", todayDate
-        ));
+        // Build your return map payload here (adjust to match your existing map return structure)
+        Map<String, Object> response = new HashMap<>();
+        response.put("deltaOrders", deltaOrders);
+        response.put("serverCount", serverCount);
+        response.put("totalCount", totalCount);
+
+        return ResponseEntity.ok(response);
     }
 
     // ─────────────────────────────────────────────────────

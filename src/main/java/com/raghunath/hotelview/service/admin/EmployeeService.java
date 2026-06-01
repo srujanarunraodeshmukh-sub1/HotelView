@@ -44,16 +44,23 @@ public class EmployeeService {
 
         if (passwordEncoder.matches(password, emp.getPassword())) {
 
-            // --- STRICT BLOCK LOGIC ---
-            long activeSessions = employeeRefreshTokenRepository.countByUserId(emp.getId());
-            if (activeSessions >= emp.getMaxLogins()) {
-                throw new RuntimeException("Login limit reached (" + emp.getMaxLogins() + "). Logout elsewhere.");
+            // 🚀 SMART SESSION MANAGEMENT (Evict oldest session instead of blocking)
+            List<EmployeeRefreshToken> activeSessions = employeeRefreshTokenRepository.findByUserIdOrderByIdAsc(emp.getId());
+
+            // Establish fallback limit of at least 1 allowed login if maxLogins is null/0
+            int allowedLogins = (emp.getMaxLogins() > 0) ? emp.getMaxLogins() : 1;
+
+            // If user has hit or exceeded the limit, delete the oldest record from the DB
+            if (activeSessions.size() >= allowedLogins) {
+                EmployeeRefreshToken oldestSession = activeSessions.get(0);
+                employeeRefreshTokenRepository.delete(oldestSession);
             }
 
-            // Generate Tokens (3 arguments only - version removed)
+            // Generate Tokens (3 arguments match your signature payload requirements)
             String accessToken = jwtUtil.generateAccessToken(emp.getId(), emp.getHotelId(), emp.getRole());
             String refreshToken = jwtUtil.generateRefreshToken(emp.getId(), emp.getHotelId(), emp.getRole());
 
+            // Save new active session token metadata
             EmployeeRefreshToken et = EmployeeRefreshToken.builder()
                     .userId(emp.getId())
                     .token(refreshToken)

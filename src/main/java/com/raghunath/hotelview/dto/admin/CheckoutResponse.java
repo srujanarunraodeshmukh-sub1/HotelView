@@ -23,7 +23,7 @@ public class CheckoutResponse {
     @Builder
     public static class BillItem {
         private String itemName;
-        private Integer quantity;
+        private String quantity;
         private Double price; // unit price * quantity
     }
 }

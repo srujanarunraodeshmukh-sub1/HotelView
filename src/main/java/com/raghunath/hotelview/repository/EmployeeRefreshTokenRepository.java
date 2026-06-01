@@ -10,6 +10,9 @@ public interface EmployeeRefreshTokenRepository extends MongoRepository<Employee
 
     Optional<EmployeeRefreshToken> findByToken(String token);
 
+    // 🚀 Fixed: Replaced the non-existent property query with ID sorting
+    List<EmployeeRefreshToken> findByUserIdOrderByIdAsc(String userId);
+
     // To support multi-device logic in the Filter
     List<EmployeeRefreshToken> findByUserId(String userId);
 

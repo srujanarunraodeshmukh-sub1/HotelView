@@ -10,8 +10,8 @@ public interface KitchenOrderRepository extends MongoRepository<KitchenOrder, St
 
     List<KitchenOrder> findByHotelIdAndStatusIn(String hotelId, List<String> statuses);
 
-    // Changed 'int' to 'Integer' to support Home Delivery (nulls)
-    List<KitchenOrder> findByHotelIdAndTableNameAndStatusNotOrderByCreatedAtDesc(
+    // ✅ FIXED: Changed 'OrderByCreatedAtDesc' to 'OrderByCreatedDateDescCreatedTimeDesc'
+    List<KitchenOrder> findByHotelIdAndTableNameAndStatusNotOrderByCreatedDateDescCreatedTimeDesc(
             String hotelId, String tableName, String status);
 
     List<KitchenOrder> findByHotelIdAndStatus(String hotelId, String status);
@@ -22,7 +22,8 @@ public interface KitchenOrderRepository extends MongoRepository<KitchenOrder, St
     long countByHotelIdAndTableNameAndStatusNot(
             String hotelId, String tableName, String status);
 
-    List<KitchenOrder> findByHotelIdAndTableNameAndUpdatedAtAfterOrderByCreatedAtDesc(
+    // ✅ FIXED: Changed 'OrderByCreatedAtDesc' to 'OrderByCreatedDateDescCreatedTimeDesc'
+    List<KitchenOrder> findByHotelIdAndTableNameAndUpdatedAtAfterOrderByCreatedDateDescCreatedTimeDesc(
             String hotelId, String tableName, LocalDateTime updatedAt);
 
     List<KitchenOrder> findByHotelIdAndTableName(String hotelId, String fromTable);

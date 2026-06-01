@@ -7,10 +7,10 @@ import com.raghunath.hotelview.service.admin.MenuItemService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching; // 👈 Added for multi-cache configurations
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,7 +23,8 @@ public class MenuItemController {
 
     private final MenuItemService menuItemService;
 
-    private String getHotelId() {
+    // Public visibility helper to allow clean SpEL evaluation access in annotations if needed
+    public String getHotelId() {
         return SecurityContextHolder.getContext().getAuthentication().getName();
     }
 
@@ -32,13 +33,13 @@ public class MenuItemController {
         return ResponseEntity.ok(menuItemService.getMenuMetadata(getHotelId()));
     }
 
-
     @GetMapping("/updates")
     public ResponseEntity<List<MenuItem>> getMenuUpdates(@RequestParam long lastSync) {
         return ResponseEntity.ok(menuItemService.getChangedItems(getHotelId(), lastSync));
     }
 
     @GetMapping("/all-cached")
+    @Cacheable(value = "menuSummaryCache", key = "#root.target.getHotelId()")
     public List<MenuItemSummaryDTO> getAllForCache() {
         return menuItemService.getAllItemsForCache(getHotelId());
     }
@@ -49,9 +50,13 @@ public class MenuItemController {
     }
 
     @PatchMapping("/{itemId}/availability")
+    @Caching(evict = {
+            @CacheEvict(value = "menuSummaryCache", key = "#root.target.getHotelId()"), // 👈 Evicts ONLY this hotel's summary menu
+            @CacheEvict(value = "menuCache", allEntries = true)                       // 👈 Clears paginated admin views
+    })
     public ResponseEntity<MenuItemSummaryDTO> toggleAvailability(
-            @PathVariable(name = "itemId") String itemId, // Add (name = "itemId")
-            @RequestParam(name = "available") boolean available) { // Add (name = "available")
+            @PathVariable(name = "itemId") String itemId,
+            @RequestParam(name = "available") boolean available) {
         return ResponseEntity.ok(menuItemService.toggleAvailabilityAndReturnDto(getHotelId(), itemId, available));
     }
 
@@ -72,7 +77,10 @@ public class MenuItemController {
     }
 
     @PostMapping("/add")
-    @CacheEvict(value = "menuCache", allEntries = true)
+    @Caching(evict = {
+            @CacheEvict(value = "menuSummaryCache", key = "#root.target.getHotelId()"), // 👈 Target evict by unique key
+            @CacheEvict(value = "menuCache", allEntries = true)
+    })
     public ApiResponse addMenuItem(@RequestBody MenuItemRequest request){
         String message = menuItemService.addMenuItem(request, getHotelId());
         return new ApiResponse(message);
@@ -92,14 +100,15 @@ public class MenuItemController {
     }
 
     @PutMapping("/{itemId}")
-    @CacheEvict(value = "menuCache", allEntries = true)
+    @Caching(evict = {
+            @CacheEvict(value = "menuSummaryCache", key = "#root.target.getHotelId()"), // 👈 Target evict by unique key
+            @CacheEvict(value = "menuCache", allEntries = true)
+    })
     public ResponseEntity<MenuItemSummaryDTO> updateMenuItem(
             @PathVariable String itemId,
             @Valid @RequestBody MenuItemUpdateDTO updateRequest) {
 
-        // In your Filter, you set 'hotelId' as the Principal. Fetch it like this:
-        String hotelId = SecurityContextHolder.getContext().getAuthentication().getName();
-
+        String hotelId = getHotelId();
         MenuItemSummaryDTO updatedItem = menuItemService.updateMenuItem(hotelId, itemId, updateRequest);
         return ResponseEntity.ok(updatedItem);
     }

@@ -138,8 +138,18 @@ public class AdminAuthService {
     }
 
     private LoginResponse performLogin(Admin admin, String message, boolean isExpired) {
-        String accessToken = jwtUtil.generateAccessToken(admin.getHotelId(), admin.getHotelId(), "ADMIN");
-        String refreshToken = jwtUtil.generateRefreshToken(admin.getHotelId(), admin.getHotelId(), "ADMIN");
+
+        // FIXED: admin.getId() as subject, admin.getHotelId() as hotelId claim
+        String accessToken = jwtUtil.generateAccessToken(
+                admin.getId(),        // ← MongoDB _id as subject
+                admin.getHotelId(),   // ← hotelId as claim
+                "ADMIN"
+        );
+        String refreshToken = jwtUtil.generateRefreshToken(
+                admin.getId(),        // ← MongoDB _id as subject
+                admin.getHotelId(),   // ← hotelId as claim
+                "ADMIN"
+        );
 
         AdminRefreshToken adminToken = AdminRefreshToken.builder()
                 .userId(admin.getHotelId())
@@ -163,7 +173,10 @@ public class AdminAuthService {
                 .restaurantName(admin.getRestaurantName())
                 .address(admin.getAddress())
                 .isPlanExpired(isExpired)
-                .expiryDate(admin.getSubscriptionExpiry().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")))
+                .expiryDate(admin.getSubscriptionExpiry() != null
+                        ? admin.getSubscriptionExpiry()
+                        .format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"))
+                        : "N/A")
                 .build();
     }
 
@@ -178,7 +191,10 @@ public class AdminAuthService {
                 .emailId(admin.getEmailId())
                 .restaurantUpi(admin.getRestaurantUpi())
                 .address(admin.getAddress())
-                .subscriptionExpiry(admin.getSubscriptionExpiry().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")))
+                .subscriptionExpiry(admin.getSubscriptionExpiry() != null
+                        ? admin.getSubscriptionExpiry()
+                        .format(DateTimeFormatter.ofPattern("dd-MM-yyyy"))
+                        : "N/A")
                 .build();
     }
 
@@ -289,8 +305,9 @@ public class AdminAuthService {
         // Check status for frontend visibility
         boolean isExpired = getNowIST().isAfter(admin.getSubscriptionExpiry());
 
-        String newAccess = jwtUtil.generateAccessToken(hotelId, hotelId, "ADMIN");
-        String newRefresh = jwtUtil.generateRefreshToken(hotelId, hotelId, "ADMIN");
+        // 🚀 FIXED: Pass admin.getId() as the userId/Subject parameter instead of hotelId!
+        String newAccess = jwtUtil.generateAccessToken(admin.getId(), hotelId, "ADMIN");
+        String newRefresh = jwtUtil.generateRefreshToken(admin.getId(), hotelId, "ADMIN");
 
         // Update existing document
         storedToken.setToken(newRefresh);

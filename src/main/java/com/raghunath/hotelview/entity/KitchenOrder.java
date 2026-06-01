@@ -11,19 +11,19 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
-@CompoundIndex(name = "hotel_table_status", def = "{'hotelId': 1, 'tableNumber': 1, 'status': 1}")
+@CompoundIndex(name = "hotel_table_status", def = "{'hotelId': 1, 'tableName': 1, 'status': 1}")
 @Document(collection = "kitchen_orders")
 public class KitchenOrder {
     @Id
     private String id;
 
-    @org.springframework.data.mongodb.core.mapping.Field("hotelId")
+    @Field("hotelId")
     private String hotelId;
 
-    @org.springframework.data.mongodb.core.mapping.Field("tableName")
-    private String tableName; // Integer allows NULL for Home Delivery
+    @Field("tableName")
+    private String tableName;
 
-    @org.springframework.data.mongodb.core.mapping.Field("orderType")
+    @Field("orderType")
     private String orderType;
 
     private List<OrderItem> items;
@@ -31,12 +31,14 @@ public class KitchenOrder {
     private String status;
     private String comments;
 
-    private String createdBy;
+    private String placedBy;
+    private String editedBy;
     private String acceptedBy;
+    private String completedBy;
 
-    private LocalDateTime createdAt;
     private String createdDate;
     private String createdTime;
+
     @Field("updatedAt")
     private LocalDateTime updatedAt;
 }

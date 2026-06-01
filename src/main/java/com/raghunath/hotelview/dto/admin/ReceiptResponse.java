@@ -39,7 +39,7 @@ public class ReceiptResponse {
     @Builder
     public static class FlattenedItem {
         private String itemName;
-        private Integer quantity;
+        private String quantity;
         private Double price;
         private Double subTotal;
     }

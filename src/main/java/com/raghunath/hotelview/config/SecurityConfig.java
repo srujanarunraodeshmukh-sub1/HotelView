@@ -72,6 +72,8 @@ public class SecurityConfig {
                                 "/ws-node/**"
                         ).permitAll()
 
+                        .requestMatchers("/api/v1/admin/logout", "/api/v1/employees/logout").authenticated()
+
                         // 2. STAFF & USER MANAGEMENT (Admin Only)
                         .requestMatchers(
                                 "/api/v1/orders/completed/instant/checkout",

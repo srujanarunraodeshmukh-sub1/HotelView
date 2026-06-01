@@ -117,7 +117,7 @@ public class VersionService {
     public List<KitchenOrder> getKitchenDeltaSince(
             String hotelId, String tableName, LocalDateTime since) {
         return kitchenOrderRepository
-                .findByHotelIdAndTableNameAndUpdatedAtAfterOrderByCreatedAtDesc(
+                .findByHotelIdAndTableNameAndUpdatedAtAfterOrderByCreatedDateDescCreatedTimeDesc(
                         hotelId, tableName, since);
     }
 
