@@ -1,29 +1,29 @@
 package com.raghunath.hotelview.config;
 
-import org.springframework.cache.Cache;
+import com.github.ben_manes.caffeine.cache.Caffeine;
 import org.springframework.cache.CacheManager;
-import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
+import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.Scheduled;
+
+import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 @Configuration
-@EnableScheduling // Required for the timer to work
 public class CacheConfig {
 
     @Bean
     public CacheManager cacheManager() {
-        return new ConcurrentMapCacheManager("menuCache", "completedOrders");
-    }
+        CaffeineCacheManager cacheManager = new CaffeineCacheManager();
 
-    // This is the "Cleanup Crew"
-    @Scheduled(fixedRate = 600000) // 10 minutes in milliseconds
-    public void clearMenuCache() {
-        // This just empties the RAM so the next user gets fresh data from the DB
-        Cache cache = cacheManager().getCache("menuCache");
-        if (cache != null) {
-            cache.clear();
-        }
+        // Register the exact cache names explicitly in Java code
+        cacheManager.setCacheNames(Arrays.asList("menuCache", "menuSummaryCache"));
+
+        // Apply your Render 1-hour expiration, 10-hotel limit rules directly
+        cacheManager.setCaffeine(Caffeine.newBuilder()
+                .maximumSize(10)
+                .expireAfterAccess(1, TimeUnit.HOURS));
+
+        return cacheManager;
     }
 }
