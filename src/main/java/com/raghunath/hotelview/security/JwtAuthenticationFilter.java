@@ -1,12 +1,12 @@
 package com.raghunath.hotelview.security;
 
-import com.raghunath.hotelview.entity.AdminRefreshToken;
-import com.raghunath.hotelview.repository.AdminRefreshTokenRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager; // 👈 Core memory cache manager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,7 +22,7 @@ import java.util.List;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
-    private final AdminRefreshTokenRepository tokenRepository;
+    private final CacheManager cacheManager; // 👈 Inject your native Spring cache manager
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -37,10 +37,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (jwtUtil.validateToken(token)) {
                 String hotelId = jwtUtil.extractHotelId(token);
 
-                // Check if the user has an active session record in DB
-                boolean sessionExists = tokenRepository.existsByUserId(hotelId);
+                // ⚡ Read from RAM Cache instead of hitting MongoDB disk space!
+                Cache activeSessionsCache = cacheManager.getCache("activeSessionsCache");
+                Boolean isSessionActive = null;
 
-                if (sessionExists) {
+                if (activeSessionsCache != null) {
+                    isSessionActive = activeSessionsCache.get(hotelId, Boolean.class);
+                }
+
+                // Fallback: If cache is empty, assume valid or let refresh endpoint handle it
+                if (isSessionActive == null || isSessionActive) {
                     String role = jwtUtil.extractRole(token);
 
                     UsernamePasswordAuthenticationToken authentication =
@@ -55,7 +61,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 } else {
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     response.setContentType("application/json");
-                    response.getWriter().write("{\"error\": \"SESSION_EXPIRED\", \"message\": \"Session no longer active.\"}");
+                    response.getWriter().write("{\"error\": \"SESSION_EXPIRED\", \"message\": \"Your session was terminated by another device.\"}");
                     return;
                 }
             }
