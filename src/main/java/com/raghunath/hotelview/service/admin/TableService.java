@@ -34,9 +34,14 @@ public class TableService {
     @Transactional
     public void transferTableOrders(String hotelId, String fromTable, String toTable) {
         // 1. Validate that the destination table exists
-        RestaurantTable targetTable = tableRepository.findByHotelIdAndTableName(hotelId, toTable)
-                .orElseThrow(() -> new RuntimeException("Target table " + toTable + " does not exist"));
-
+        RestaurantTable targetTable;
+        try {
+            targetTable = tableRepository.findByHotelIdAndTableName(hotelId, toTable)
+                    .orElseThrow(() -> new RuntimeException("Target table " + toTable + " does not exist"));
+        } catch (org.springframework.dao.IncorrectResultSizeDataAccessException e) {
+            // 🎯 CATCHES THE DUPLICATE ERROR HERE AND RETURNS YOUR CUSTOM MESSAGE
+            throw new RuntimeException("Data Error: Multiple tables exist with the name '" + toTable + "'. Please clean your table data.");
+        }
         // 2. Fetch all active kitchen orders for the source table
         List<KitchenOrder> activeOrders = kitchenOrderRepository.findByHotelIdAndTableName(hotelId, fromTable);
 

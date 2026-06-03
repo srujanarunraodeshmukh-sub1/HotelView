@@ -137,7 +137,7 @@ public class OrderController {
     // 8. GET STATISTICS
     @GetMapping("/dashboard/stats")
     public ResponseEntity<DashboardStatsDTO> getDashboardStats() {
-        String hotelId = getAuthenticatedUserId();
+        String hotelId = SecurityContextHolder.getContext().getAuthentication().getName(); // ← fix
         return ResponseEntity.ok(orderService.getDashboardStats(hotelId));
     }
 

@@ -12,6 +12,7 @@ public class CheckoutResponse {
     private String checkoutDate;
     private String checkoutTime;
     private String orderType;
+    private String tableName;
     private String customerName;
     private String customerMobile;
     private String customerAddress;

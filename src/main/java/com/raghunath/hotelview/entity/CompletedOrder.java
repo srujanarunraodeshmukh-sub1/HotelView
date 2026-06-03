@@ -15,6 +15,7 @@ public class CompletedOrder {
     private String id;
     private String hotelId;
     private String orderType;
+    private String tableName;
 
     private String customerName;
     private String customerMobile;

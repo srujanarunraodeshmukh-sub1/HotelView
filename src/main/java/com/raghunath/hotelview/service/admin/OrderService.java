@@ -182,6 +182,7 @@ public class OrderService {
         if (activeOrders.isEmpty()) {
             throw new RuntimeException("No active orders found");
         }
+        String tableName = activeOrders.get(0).getTableName();
 
         // 3. Aggregate Items
         Map<String, CheckoutResponse.BillItem> itemMap = new HashMap<>();
@@ -212,6 +213,7 @@ public class OrderService {
         CompletedOrder finalBill = CompletedOrder.builder()
                 .hotelId(hotelId)
                 .orderType(activeOrders.get(0).getOrderType())
+                .tableName(tableName)
                 .customerName(StringUtils.hasText(request.getCustomerName()) ? request.getCustomerName() : "Walk-in Guest")
                 .customerMobile(StringUtils.hasText(request.getCustomerMobile()) ? request.getCustomerMobile() : "0000000000")
                 .customerAddress(StringUtils.hasText(request.getCustomerAddress()) ? request.getCustomerAddress() : "N/A")
@@ -244,6 +246,7 @@ public class OrderService {
                 .checkoutDate(finalBill.getCheckoutDate())
                 .checkoutTime(finalBill.getCheckoutTime())
                 .orderType(finalBill.getOrderType())
+                .tableName(finalBill.getTableName())
                 .customerName(finalBill.getCustomerName())
                 .customerMobile(finalBill.getCustomerMobile())
                 .customerAddress(finalBill.getCustomerAddress())

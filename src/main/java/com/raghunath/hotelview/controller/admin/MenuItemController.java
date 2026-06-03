@@ -42,6 +42,7 @@ public class MenuItemController {
         return ResponseEntity.ok(menuItemService.getAllItemsForCache(getHotelId()));
     }
 
+    // searching implemented on frontend side
     @GetMapping("/search")
     public List<MenuItemSummaryDTO> searchMenuItems(@RequestParam(name = "query") String query) {
         return menuItemService.searchMenuItems(getHotelId(), query);
@@ -76,6 +77,7 @@ public class MenuItemController {
         return new ApiResponse(message);
     }
 
+    // Not in production
     @GetMapping("/allmenuitem")
     public ResponseEntity<PagedModel<MenuItem>> getAllMenuItems(
             @RequestParam(defaultValue = "0") int page,
@@ -84,6 +86,7 @@ public class MenuItemController {
         return ResponseEntity.ok(new PagedModel<>(items)); // 👈 Bypasses PageImpl serialization logging warnings
     }
 
+    // Not in production
     @GetMapping("/category")
     public List<MenuItem> getCategoryItems(@RequestParam String category){
         return menuItemService.getCategoryItems(getHotelId(), category);
