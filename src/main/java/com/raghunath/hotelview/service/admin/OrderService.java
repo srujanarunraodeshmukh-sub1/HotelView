@@ -338,6 +338,11 @@ public class OrderService {
         Admin admin = adminRepository.findByHotelId(hotelId)
                 .orElseThrow(() -> new RuntimeException("Hotel Admin not found"));
 
+        ZonedDateTime last24HoursStart = nowIST.minusHours(24);
+        String last24HoursStartDate = last24HoursStart.format(DateTimeFormatter.ISO_LOCAL_DATE);
+        String last24HoursStartTime = last24HoursStart.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+        String nowTime = nowIST.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+
         String restaurantName = admin.getRestaurantName() != null ? admin.getRestaurantName() : "Unknown Restaurant";
         String planType = admin.getPlanType() != null ? admin.getPlanType() : "BASIC";
 
@@ -360,6 +365,30 @@ public class OrderService {
             log.error("AGGREGATION_ERROR: Sales sum failed for hotel {}", hotelId);
         }
 
+        Double last24HoursSales = 0.0;
+        Long last24HoursOrders = 0L;
+        try {
+            List<CompletedOrder> last24HoursCompletedOrders = mongoTemplate.find(
+                    new Query(Criteria.where("hotelId").is(hotelId)
+                            .orOperator(
+                                    Criteria.where("checkoutDate").is(todayDate),
+                                    Criteria.where("checkoutDate").is(last24HoursStartDate)
+                            )),
+                    CompletedOrder.class
+            );
+
+            last24HoursOrders = last24HoursCompletedOrders.stream()
+                    .filter(o -> isWithinLast24Hours(o, last24HoursStart, nowIST))
+                    .count();
+
+            last24HoursSales = last24HoursCompletedOrders.stream()
+                    .filter(o -> isWithinLast24Hours(o, last24HoursStart, nowIST))
+                    .mapToDouble(o -> o.getTotalPayable() != null ? o.getTotalPayable() : 0.0)
+                    .sum();
+        } catch (Exception e) {
+            log.error("AGGREGATION_ERROR: Last 24h stats failed for hotel {}", hotelId);
+        }
+
         return DashboardStatsDTO.builder()
                 .activeTablesCount(activeTablesCount)
                 .HomeDeliveriesCount(homeAndParcelOrdersToday)
@@ -369,7 +398,22 @@ public class OrderService {
                 .restaurantName(restaurantName)
                 .planType(planType)
                 .todaySalesRupees(todaySalesRupees)
+                .last24HoursSalesRupees(last24HoursSales)
+                .last24HoursOrdersCount(last24HoursOrders)
                 .build();
+    }
+
+    private boolean isWithinLast24Hours(CompletedOrder order, ZonedDateTime from, ZonedDateTime to) {
+        try {
+            // Combine checkoutDate + checkoutTime into a ZonedDateTime for comparison
+            LocalDateTime orderDateTime = LocalDateTime.parse(
+                    order.getCheckoutDate() + "T" + order.getCheckoutTime()
+            );
+            ZonedDateTime orderZDT = orderDateTime.atZone(IST);
+            return !orderZDT.isBefore(from) && !orderZDT.isAfter(to);
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     /**

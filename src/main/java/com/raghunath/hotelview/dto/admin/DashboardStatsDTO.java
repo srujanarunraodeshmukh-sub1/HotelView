@@ -14,4 +14,6 @@ public class DashboardStatsDTO {
     private Long employeeOnlineCount;        // 14 ONLINE
     private Long totalItemsCount;            // 45 TOTAL
     private Double todaySalesRupees;         // 15300.0 (till now)
+    private Double last24HoursSalesRupees;
+    private Long last24HoursOrdersCount;
 }

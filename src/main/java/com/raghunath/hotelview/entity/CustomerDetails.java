@@ -19,5 +19,5 @@ public class CustomerDetails {
     private String customerAddress;
     private Integer totalOrders;
     private Double totalAmountPaid;
-    private LocalDateTime lastOrderDate;
+    private String lastOrderDate;
 }
