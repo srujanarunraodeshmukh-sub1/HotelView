@@ -322,6 +322,8 @@ public class OrderService {
                 .customerAddress(finalBill.getCustomerAddress())
                 .items(new ArrayList<>(itemMap.values()))
                 .grandTotal(grandTotal)
+                .discountPercent(discountPercent)
+                .discountAmount(discountAmount)
                 .totalPayable(totalPayable)
                 .restaurantName(admin.getRestaurantName())        // ← ADD
                 .restaurantAddress(admin.getRestaurantAddress())  // ← ADD
@@ -712,6 +714,7 @@ public class OrderService {
                 .restaurantAddress(admin.getRestaurantAddress())    // ← ADD
                 .restaurantContact(admin.getRestaurantContact())    // ← ADD
                 .restaurantUpi(admin.getRestaurantUpi())
+                .restaurantLogo(admin.getRestaurantLogo())
                 .build();
     }
 

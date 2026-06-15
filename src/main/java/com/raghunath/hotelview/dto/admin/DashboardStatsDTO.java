@@ -21,4 +21,5 @@ public class DashboardStatsDTO {
     private String restaurantAddress;
     private String restaurantContact;
     private String restaurantUpi;
+    private String restaurantLogo;
 }

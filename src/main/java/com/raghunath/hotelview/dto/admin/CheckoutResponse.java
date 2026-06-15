@@ -19,6 +19,8 @@ public class CheckoutResponse {
     private List<BillItem> items;
     private Double grandTotal;
     private Double totalPayable;
+    private Double discountPercent;
+    private Double discountAmount;
 
     private String restaurantName;
     private String restaurantAddress;
