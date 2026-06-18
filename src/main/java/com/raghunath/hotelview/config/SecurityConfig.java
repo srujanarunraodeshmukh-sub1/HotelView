@@ -76,8 +76,6 @@ public class SecurityConfig {
 
                         // 2. STAFF & USER MANAGEMENT (Admin Only)
                         .requestMatchers(
-                                "/api/v1/orders/instant/checkout",
-                                "/api//v1/orders/instant/direct-checkout",
                                 "/api/v1/employees/register",
                                 "/api/v1/admin/profile",
                                 "/api/v1/employees/list",
@@ -115,6 +113,8 @@ public class SecurityConfig {
                                 "/api/v1/orders/external/accept/",
                                 "/api/v1/orders/checkout",
                                 "/api/v1/orders/direct-checkout",
+                                "/api/v1/orders/instant/checkout",
+                                "/api//v1/orders/instant/direct-checkout",
                                 "/api/v1/orders/completed/transfer/**",
                                 "/api/v1/orders/completed/delivery/today",
                                 "/api/v1/orders/completed/**",
