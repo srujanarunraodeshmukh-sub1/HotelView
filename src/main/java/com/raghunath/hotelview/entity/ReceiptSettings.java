@@ -26,4 +26,5 @@ public class ReceiptSettings {
     private boolean showCustomerDetails;
     private boolean printUpiAndQr;
     private boolean printGreetingNote;
+    private boolean printItemQuantities;
 }

@@ -1,4 +1,4 @@
-package com.raghunath.hotelview.service;
+package com.raghunath.hotelview.service.admin;
 
 import com.raghunath.hotelview.dto.admin.ReceiptSettingsDTO;
 import com.raghunath.hotelview.entity.ReceiptSettings;
@@ -46,6 +46,7 @@ public class ReceiptSettingsService {
         settings.setShowCustomerDetails(dto.isShowCustomerDetails());
         settings.setPrintUpiAndQr(dto.isPrintUpiAndQr());
         settings.setPrintGreetingNote(dto.isPrintGreetingNote());
+        settings.setPrintItemQuantities(dto.isPrintItemQuantities());
 
         repository.save(settings);
         log.info("Successfully updated '{}' receipt settings for hotel: {}", receiptType, hotelId);
@@ -64,6 +65,7 @@ public class ReceiptSettingsService {
                 .showCustomerDetails(entity.isShowCustomerDetails())
                 .printUpiAndQr(entity.isPrintUpiAndQr())
                 .printGreetingNote(entity.isPrintGreetingNote())
+                .printItemQuantities(entity.isPrintItemQuantities())
                 .build();
     }
 
@@ -80,6 +82,7 @@ public class ReceiptSettingsService {
                     .showCustomerDetails(true)
                     .printUpiAndQr(true)
                     .printGreetingNote(true)
+                    .printItemQuantities(true)
                     .build();
         } else { // Fallback targets "INSTANT" configuration defaults directly
             return ReceiptSettingsDTO.builder()
@@ -93,6 +96,7 @@ public class ReceiptSettingsService {
                     .showCustomerDetails(true)
                     .printUpiAndQr(true)
                     .printGreetingNote(true)
+                    .printItemQuantities(true)
                     .build();
         }
     }

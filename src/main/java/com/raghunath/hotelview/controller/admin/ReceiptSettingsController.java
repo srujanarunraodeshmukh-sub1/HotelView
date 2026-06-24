@@ -1,7 +1,7 @@
 package com.raghunath.hotelview.controller.admin;
 
 import com.raghunath.hotelview.dto.admin.ReceiptSettingsDTO;
-import com.raghunath.hotelview.service.ReceiptSettingsService;
+import com.raghunath.hotelview.service.admin.ReceiptSettingsService;
 import com.raghunath.hotelview.security.JwtUtil; // Replace with your exact project layout path to JwtUtil
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
