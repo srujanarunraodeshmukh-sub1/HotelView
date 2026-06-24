@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -238,7 +239,13 @@ public class OrderService {
     /**
      * 6. CHECKOUT ORDERS: checkout all orders.
      */
-    @CacheEvict(value = "dashboardStatsCache", key = "#hotelId")
+    @Caching(evict = {
+            @CacheEvict(value = "dashboardStatsCache", key = "#hotelId"),
+            @CacheEvict(value = "orderCache", key = "#hotelId + '-today'"),
+            @CacheEvict(value = "orderCache", key = "#hotelId + '-week'"),
+            @CacheEvict(value = "orderCache", key = "#hotelId + '-month'"),
+            @CacheEvict(value = "orderCache", key = "#hotelId + '-year'")
+    })
     @Transactional
     public CheckoutResponse checkoutOrders(String hotelId, CheckoutRequest request, String checkoutBy) {
         // 1. Subscription Check
@@ -339,7 +346,13 @@ public class OrderService {
     /**
      * 7. INSTANT CHECKOUT
      */
-    @CacheEvict(value = "dashboardStatsCache", key = "#hotelId")
+    @Caching(evict = {
+            @CacheEvict(value = "dashboardStatsCache", key = "#hotelId"),
+            @CacheEvict(value = "orderCache", key = "#hotelId + '-today'"),
+            @CacheEvict(value = "orderCache", key = "#hotelId + '-week'"),
+            @CacheEvict(value = "orderCache", key = "#hotelId + '-month'"),
+            @CacheEvict(value = "orderCache", key = "#hotelId + '-year'")
+    })
     @Transactional
     public CheckoutResponse instantOrderAndCheckout(String hotelId, InstantCheckoutRequest request, String actualLoggedInUser) {
         // 1. Subscription Check
@@ -409,7 +422,13 @@ public class OrderService {
                 .build();
     }
 
-    @CacheEvict(value = "dashboardStatsCache", key = "#hotelId")
+    @Caching(evict = {
+            @CacheEvict(value = "dashboardStatsCache", key = "#hotelId"),
+            @CacheEvict(value = "orderCache", key = "#hotelId + '-today'"),
+            @CacheEvict(value = "orderCache", key = "#hotelId + '-week'"),
+            @CacheEvict(value = "orderCache", key = "#hotelId + '-month'"),
+            @CacheEvict(value = "orderCache", key = "#hotelId + '-year'")
+    })
     @Transactional
     public CheckoutResponse instantCustomOrderAndCheckout(String hotelId, InstantCheckoutRequestNew request, String actualLoggedInUser) {
         // 1. Subscription Plan Validation
@@ -507,7 +526,13 @@ public class OrderService {
                 .build();
     }
 
-    @CacheEvict(value = "dashboardStatsCache", key = "#hotelId")
+    @Caching(evict = {
+            @CacheEvict(value = "dashboardStatsCache", key = "#hotelId"),
+            @CacheEvict(value = "orderCache", key = "#hotelId + '-today'"),
+            @CacheEvict(value = "orderCache", key = "#hotelId + '-week'"),
+            @CacheEvict(value = "orderCache", key = "#hotelId + '-month'"),
+            @CacheEvict(value = "orderCache", key = "#hotelId + '-year'")
+    })
     @Transactional
     public CheckoutResponse checkoutDirectOrder(String hotelId, DirectOrderRequest request, String checkoutBy) {
         // 1. Subscription Check (Mirroring standard checkouts)
